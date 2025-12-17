@@ -7,6 +7,8 @@ services:
       - "3000:3000"
     environment:
       - NODE_ENV=production
+    env_file:
+      - config/frontend.env
   backend:
     build:
       context: ./backend
@@ -15,3 +17,5 @@ services:
       - "8000:8000"
     environment:
       - ENV=production
+    env_file:
+      - config/backend.env
