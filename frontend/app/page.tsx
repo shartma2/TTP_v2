@@ -5,10 +5,19 @@ import { useState } from "react";
 export default function Home() {
   const [output, setOutput] = useState<string>("");
 
-  const handleClick = () => {
-    console.log("hello!");
-    setOutput("hello!");
-  };
+  const handleClick = async () => {
+    const response = await fetch("http://localhost:8000/jobs", {
+      method: "POST",
+      headers: {
+      "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+      module: "cot",
+      }),
+    });
+    const data = await response.json();
+    setOutput(JSON.stringify(data, null, 2));
+    };
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950 p-6">
