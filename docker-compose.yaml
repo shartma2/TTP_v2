@@ -8,7 +8,7 @@ services:
     environment:
       - NODE_ENV=production
     env_file:
-      - config/frontend.env
+      - ./config/frontend.env
   backend:
     build:
       context: ./backend
@@ -18,4 +18,4 @@ services:
     environment:
       - ENV=production
     env_file:
-      - config/backend.env
+      - ./config/backend.env
