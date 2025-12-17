@@ -11,7 +11,6 @@ MODULES = {
     "cot": run_cot,
 }
 
-# In-memory store (OK for a prototype; resets on container restart)
 JOBS: dict[str, dict[str, Any]] = {}
 
 class CreateJobRequest(BaseModel):
