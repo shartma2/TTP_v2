@@ -1,9 +1,9 @@
-from time import sleep
 from openai import OpenAI
-from .prompt import build_prompt
 from datetime import datetime
 from typing import Any
 import os
+
+from .prompt import build_prompt
 
 api_key=os.environ.get("API_KEY")
 base_url=""
