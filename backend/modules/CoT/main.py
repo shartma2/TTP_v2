@@ -3,5 +3,5 @@ from .prompt import build_prompt
 
 client = OpenAI()
 
-def run() -> str:
-    return "I am running the CoT module!"
+def run(payload) -> str:
+    return f"I am running the CoT module! I am carrying a heavy payload: {payload}"
