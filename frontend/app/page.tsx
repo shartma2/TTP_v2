@@ -5,14 +5,15 @@ import { useState } from "react";
 export default function Home() {
   const [output, setOutput] = useState<string>("");
 
-  const handleClick = async () => {
+  const handleClick = async (module: string, payload?: Record<string, any>) => {
     const response = await fetch("http://localhost:8000/jobs", {
       method: "POST",
       headers: {
       "Content-Type": "application/json",
       },
       body: JSON.stringify({
-      module: "cot",
+      module,
+      payload,
       }),
     });
     const data = await response.json();
@@ -27,7 +28,7 @@ export default function Home() {
         </h1>
         <button
           type="button"
-          onClick={handleClick}
+          onClick={() => handleClick("cot", { payload: "Sample payload" })}
           className="w-full rounded-2xl bg-white/10 px-6 py-3 text-lg font-medium tracking-wide transition hover:bg-white/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-2 focus-visible:ring-offset-gray-950"
         >
           Click Here
