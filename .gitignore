@@ -8,5 +8,5 @@ frontend/.next/
 frontend/node_modules/
 
 #Log files
-logs/*
-!logs/.gitkeep
+backend/logs/*
+!backend/logs/.gitkeep
