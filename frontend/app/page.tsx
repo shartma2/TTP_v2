@@ -49,7 +49,14 @@ function ModuleCard({ title, module, description }: ModuleCardProps) {
           const status = job?.status as string | undefined;
 
           if (status === "done") {
-            setOutput(JSON.stringify(job.result, null, 2));
+            const result = job?.result;
+            const display =
+              result && "response" in result
+                ? String((result as any).response)
+                : typeof result === "string"
+                ? result
+                : "No valid response found.";
+            setOutput(display);
             setLoading(false);
             return;
           }
