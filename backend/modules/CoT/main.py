@@ -1,9 +1,11 @@
 from openai import OpenAI
 from typing import Any
 import os
-from backend.modules.logging.main import log
 
+
+from modules.logging.main import log
 from .prompt import SYSTEM_INSTRUCTIONS, PROMPT_TEMPLATE
+from .parsing import main as parse_cot
 
 api_key=os.environ.get("API_KEY")
 base_url=""
@@ -31,5 +33,8 @@ def run(payload: dict[str, Any]) -> dict[str, Any]:
     )
 
     log(response, "cot", model, temperature, base_url, api_key, messages)
+
+    parsed = parse_cot(response.choices[0].message.content)
+    print("Parsed CoT Output::", parsed)
 
     return {"response": response.choices[0].message.content}
