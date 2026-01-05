@@ -1,17 +1,22 @@
 from datetime import datetime
 import os
 import json
+import logging
+
 LOGS_DIR = "/app/backend/logs"
 
+logger = logging.getLogger(__name__)
 
 def log(response, module, model, temperature, base_url, api_key, messages):
-    ts = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    ts = datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")
     try:
         resp_dict = response.model_dump()
-    except Exception:
+    except Exception as e_json:
+        logger.warning("Failed to serialize response with model_dump(): %s", e_json)
         try:
             resp_dict = response.__dict__
-        except Exception:
+        except Exception as e_dict:
+            logger.warning("Failed to serialize response using __dict__: %s. Falling back to string representation.", e_dict)
             resp_dict = {"raw": str(response)}
 
     log_entry = {
