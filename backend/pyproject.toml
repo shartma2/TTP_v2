@@ -7,6 +7,12 @@ authors = [
 ]
 requires-python = ">=3.11"
 dependencies = [
+    "fastapi (>=0.124.4,<0.125.0)",
+    "uvicorn (>=0.38.0,<0.39.0)",
+    "openai (>=2.13.0,<3.0.0)",
+    "asyncio (>=4.0.0,<5.0.0)",
+    "logging (>=0.4.9.6,<0.5.0.0)",
+    "uuid (>=1.30,<2.0)"
 ]
 
 

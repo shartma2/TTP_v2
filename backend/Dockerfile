@@ -24,4 +24,4 @@ EXPOSE 8000
 
 # Start the app via Poetry
 # If your entry script is elsewhere, update the path accordingly.
-CMD ["poetry", "run", "python", "main.py"]
+CMD ["poetry", "run", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
