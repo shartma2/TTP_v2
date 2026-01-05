@@ -17,7 +17,7 @@ For each subject from Step 1, describe its internal behavior using PASS state ty
 - Use 'Branches:' for decisions
   Always increment step numbers correctly. Double-check that Branches: refer to valid steps (e.g., "Step: 10", not "Step: 9" if Step 9 is an EndState).
 - Use GotoStep: to return to earlier steps (e.g., sending new order again)
--For retry paths (like choosing another supplier), always use GotoStep: instead of duplicating behaviour"
+-For retry paths (like choosing another supplier), always use GotoStep: instead of duplicating behaviour
 -Ensure branches reference the correct step numbers
 - In decision branches:
   - Each `Step:` must point to a valid numbered step that **actually exists**.
