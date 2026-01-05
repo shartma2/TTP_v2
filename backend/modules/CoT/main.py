@@ -8,8 +8,6 @@ from .prompt import SYSTEM_INSTRUCTIONS, PROMPT_TEMPLATE
 from .parsing import main as parse_cot
 
 api_key=os.environ.get("API_KEY")
-base_url=""
-model=""
 
 
 
