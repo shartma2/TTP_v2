@@ -86,7 +86,7 @@ function ModuleCard({ title, module, description }: ModuleCardProps) {
   useEffect(() => {
     return () => {
       if (pollTimeout.current) {
-        clearTimeout(pollTimeout.current as unknown as number);
+        clearTimeout(pollTimeout.current);
         pollTimeout.current = null;
       }
     };
