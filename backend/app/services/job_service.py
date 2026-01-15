@@ -45,7 +45,7 @@ class JobService:
         payload["job_id"] = job_id
         self._jobs[job_id] = JobRecord(status="queued")
 
-        logger.info(f"Job Queued", extra={"job_id": job_id, "job_module": module})
+        logger.info("Job Queued", extra={"job_id": job_id, "job_module": module})
 
         task = asyncio.create_task(self._run_job(job_id, module, payload))
         self._tasks.add(task)
