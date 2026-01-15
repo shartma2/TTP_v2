@@ -4,7 +4,7 @@ def main(input: str):
     sbd_textt = extract_sbd_section(input)
 
     parsed_sbd = parse_sbd(sbd_textt)
-    print("Parsed SBD::", parsed_sbd)
+    #print("Parsed SBD::", parsed_sbd)
 
     sid_list = parse_sid(input.strip())
     process = {
@@ -33,7 +33,7 @@ def extract_sbd_section(full_text):
             sbd_start = i + 1  # start after this line
             break
     if sbd_start is None:
-        print("No SBD section found!")
+        #("No SBD section found!")
         return ""
 
     # Extract until explanation or EOF
@@ -46,9 +46,9 @@ def extract_sbd_section(full_text):
     return "\n".join(sbd_lines).strip()
 
 def parse_sbd(sbd_text):
-    print("=== SBD Text to parse ===")
-    print(sbd_text)
-    print("=========================")
+    #print("=== SBD Text to parse ===")
+    #print(sbd_text)
+    #print("=========================")
     lines = sbd_text.splitlines()
 
     sbd = {}
@@ -91,13 +91,13 @@ def parse_sbd(sbd_text):
 
             # Save states of previous actor
             if current_system is not None:
-                print(f"\nFinalized actor: {current_system}")
-                print(f"States: {list(states.values())}")
+                #print(f"\nFinalized actor: {current_system}")
+                #print(f"States: {list(states.values())}")
                 sbd[current_system] = list(states.values())
                 
             
             # Debug
-            print(f"Detected actor: {m.group(1)}")
+            #print(f"Detected actor: {m.group(1)}")
 
               
 
@@ -138,11 +138,11 @@ def parse_sbd(sbd_text):
             # Finalize previous state
             if current_state is not None:
                 if choices:
-                    print(f"Parsed choices for state {current_state['num']}: {choices}")
+                    #print(f"Parsed choices for state {current_state['num']}: {choices}")
                     current_state["Choices"] = choices
                     choices = []
                 if branches:
-                    print(f"Parsed branches for state {current_state['num']}: {branches}")
+                    #print(f"Parsed branches for state {current_state['num']}: {branches}")
                     current_state["Branches"] = branches
                     branches = []
                 states[current_state["num"]] = current_state
@@ -194,7 +194,7 @@ def parse_sbd(sbd_text):
         # Detect Choices and Branches
         if line.strip() == "Choices:":
             if current_state is not None and choices:
-                print(f"Parsed choices for state {current_state['num']}: {choices}")
+                #print(f"Parsed choices for state {current_state['num']}: {choices}")
                 current_state["Choices"] = choices
                 choices = []
             parsing_choices = True
@@ -205,7 +205,7 @@ def parse_sbd(sbd_text):
         elif line.strip() == "Branches:":
             # Save previously parsed branches into current_state before resetting
             if current_state is not None and branches:
-                print(f"Parsed branches for state {current_state['num']}: {branches}")
+                #print(f"Parsed branches for state {current_state['num']}: {branches}")
                 current_state["Branches"] = branches
                 branches = []
             parsing_branches = True
@@ -264,8 +264,8 @@ def parse_sbd(sbd_text):
 
     # Finalize the last actor block (very important!)
     if current_system is not None: 
-        print(f"\nFinalized actor: {current_system}")
-        print(f"States: {list(states.values())}")
+        #print(f"\nFinalized actor: {current_system}")
+        #print(f"States: {list(states.values())}")
         sbd[current_system] = list(states.values())
 
     return sbd
