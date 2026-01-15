@@ -1,13 +1,27 @@
+from __future__ import annotations
+
+from contextlib import asynccontextmanager
 from fastapi import FastAPI
-from api.router import api_router
 from fastapi.middleware.cors import CORSMiddleware
 
-app = FastAPI(
-    title="TTP v2 Backend",
-    version="0.1.0",
-)
+from api.router import api_router
+from app.services.job_service import JobService
 
-app.add_middleware(
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    app.state.job_service = JobService(max_concurrent_jobs=4)
+    yield
+    await app.state.job_service.shutdown()
+
+def create_app() -> FastAPI:
+    app = FastAPI(
+        title="TTP Backend Service",
+        description="A backend service for processing modular tasks asynchronously.",
+        version="1.0.1",
+        lifespan=lifespan,
+    )
+    app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "http://localhost:3000",
@@ -15,6 +29,11 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
-)
+    )
+    return app
 
-app.include_router(api_router)
+app = create_app()
+
+
+
+
