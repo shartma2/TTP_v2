@@ -2,38 +2,32 @@ from datetime import datetime
 import os
 import json
 import logging
+from logging import Logger
 
 LOGS_DIR = "/app/backend/logs"
 
-logger = logging.getLogger(__name__)
+class _DefaultFieldsFilter(logging.Filter):
+    def filter(self, record: logging.LogRecord) -> bool:
+        if not hasattr(record, "job_id"):
+            record.job_id = "N/A"
+        record.timestamp = datetime.now().isoformat() + "Z"
+        return True
 
-def log(response, module, model, temperature, base_url, api_key, messages):
-    ts = datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")
-    try:
-        resp_dict = response.model_dump()
-    except Exception as e_json:
-        logger.warning("Failed to serialize response with model_dump(): %s", e_json)
-        try:
-            resp_dict = response.__dict__
-        except Exception as e_dict:
-            logger.warning("Failed to serialize response using __dict__: %s. Falling back to string representation.", e_dict)
-            resp_dict = {"raw": str(response)}
+def configure_logging(level: int = logging.INFO) -> None:
+    root = logging.getLogger()
+    root.setLevel(level)
+    
+    if root.hasHandlers():
+        return
+    
+    handler = logging.StreamHandler()
+    handler.addFilter(_DefaultFieldsFilter())
 
-    log_entry = {
-        "timestamp": ts,
-        "request": {
-            "model": model,
-            "temperature": temperature,
-            "base_url": base_url,
-            "api_key_present": bool(api_key),
-        },
-        "messages": messages,
-        "response": resp_dict,
-    }
+    formatter = logging.Formatter(
+        '{"timestamp": "%(timestamp)s", "level": "%(levelname)s", "job_id": "%(job_id)s", "message": "%(message)s"}'
+    )
+    handler.setFormatter(formatter)
+    root.addHandler(handler)
 
-    # Ensure container logs directory exists and write JSON log
-    os.makedirs(LOGS_DIR, exist_ok=True)
-    log_filename = f"{module}_{ts}.json"
-    log_path = os.path.join(LOGS_DIR, log_filename)
-    with open(log_path, "w", encoding="utf-8") as f:
-        json.dump(log_entry, f, ensure_ascii=False, indent=2)
+def get_logger(name: str) -> Logger:
+    return logging.getLogger(name)
