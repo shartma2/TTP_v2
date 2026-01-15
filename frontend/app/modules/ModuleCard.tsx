@@ -23,7 +23,7 @@ export default function ModuleCard({ title, module, description }: ModuleCardPro
 
     try {
       setLoading(true);
-      const response = await fetch("http://localhost:8000/jobs", {
+      const response = await fetch("http://localhost:8000/api/jobs", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -44,7 +44,7 @@ export default function ModuleCard({ title, module, description }: ModuleCardPro
 
       const poll = async () => {
         try {
-          const res = await fetch(`http://localhost:8000/jobs/${jid}`);
+          const res = await fetch(`http://localhost:8000/api/jobs/${jid}`);
           const job = await res.json();
           const status = job?.status as string | undefined;
 
