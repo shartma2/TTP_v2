@@ -33,7 +33,7 @@ def extract_sbd_section(full_text):
             sbd_start = i + 1  # start after this line
             break
     if sbd_start is None:
-        #("No SBD section found!")
+        #print("No SBD section found!")
         return ""
 
     # Extract until explanation or EOF

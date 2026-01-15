@@ -37,7 +37,7 @@ def run(payload: dict[str, Any]) -> dict[str, Any]:
             temperature=temperature,
             messages=messages
         )
-        logger.info("Received response from OpenAI API.")
+        logger.info("Received response from OpenAI API.", extra={"job_id": job_id})
 
         #parsed = parse_cot(response.choices[0].message.content)
         #print("Parsed CoT Output::", parsed)
@@ -45,7 +45,7 @@ def run(payload: dict[str, Any]) -> dict[str, Any]:
         return {"response": response.choices[0].message.content}
 
     except Exception:
-        logger.error("Error occurred in CoT module", extra={"job_id": job_id})
+        logger.exception("Error occurred in CoT module", extra={"job_id": job_id})
         return {"error": "An error occurred while processing the request."}
 
 

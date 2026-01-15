@@ -1,10 +1,8 @@
 from __future__ import annotations
 
-from pydantic import BaseModel
-from typing import Any, Callable, Awaitable, Optional
+from typing import Any, Callable, Awaitable
 from dataclasses import dataclass
 import uuid
-import logging
 import asyncio
 
 from app.registry.modules import MODULES
@@ -36,13 +34,15 @@ class JobService:
 
         self._tasks: set[asyncio.Task] = set()
     
-    async def create_job(self, module:str, payload: Payload) -> JobId:
+    async def create_job(self, module: str, payload: Payload) -> JobId:
         module = module.strip().lower()
         if module not in MODULES:
             logger.warning("Unknown module requested", extra={"job_module": module})
             raise ValueError(f"Unknown module: {module}")
 
         job_id: JobId = str(uuid.uuid4())
+        payload = dict(payload or {})
+        payload["job_id"] = job_id
         self._jobs[job_id] = JobRecord(status="queued")
 
         logger.info(f"Job Queued", extra={"job_id": job_id, "job_module": module})
