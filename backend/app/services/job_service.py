@@ -8,6 +8,9 @@ import logging
 import asyncio
 
 from app.registry.modules import MODULES
+from app.utils.logging import get_logger
+
+logger = get_logger("services.job_service")
 
 JobId = str
 Payload = dict[str, Any] | None
@@ -36,10 +39,13 @@ class JobService:
     async def create_job(self, module:str, payload: Payload) -> JobId:
         module = module.strip().lower()
         if module not in MODULES:
-            raise ValueError("Unknown module")
+            logger.warning("Unknown module requested", extra={"job_module": module})
+            raise ValueError(f"Unknown module: {module}")
 
         job_id: JobId = str(uuid.uuid4())
         self._jobs[job_id] = JobRecord(status="queued")
+
+        logger.info(f"Job Queued", extra={"job_id": job_id, "job_module": module})
 
         task = asyncio.create_task(self._run_job(job_id, module, payload))
         self._tasks.add(task)
@@ -62,9 +68,9 @@ class JobService:
         async with self._semaphore:
             job = self._jobs[job_id]
             job.status = "running"
+            logger.info("Job started", extra={"job_id": job_id, "job_module": module})
+            function = MODULES[module]
             try:
-                function = MODULES[module]
-                
                 if asyncio.iscoroutinefunction(function):
                     result = await function(payload)
                 else:
@@ -72,10 +78,11 @@ class JobService:
                 
                 job.result = result
                 job.status = "done"
+                logger.info("Job completed", extra={"job_id": job_id, "job_module": module})
             except Exception as e:
-                logging.error(f"Error running job {job_id}: {e}")
                 job.error = str(e)
                 job.status = "failed"
+                logger.exception("Error running job", extra={"job_id": job_id, "job_module": module})
     
     async def shutdown(self) -> None:
         """
@@ -86,6 +93,6 @@ class JobService:
         
         for task in self._tasks:
             task.cancel()
-            
+
         await asyncio.gather(*self._tasks, return_exceptions=True)
         self._tasks.clear()
