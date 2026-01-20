@@ -14,6 +14,14 @@ export default function ModuleCard({ title, module, description }: ModuleCardPro
   const [loading, setLoading] = useState<boolean>(false);
   const [jobId, setJobId] = useState<string | null>(null);
   const pollTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const inputRef = useRef<HTMLTextAreaElement | null>(null);
+
+  const resizeInput = () => {
+    const el = inputRef.current;
+    if (!el) return;
+    el.style.height = "auto";
+    el.style.height = `${el.scrollHeight}px`;
+  };
 
   const runModule = async () => {
     if (loading) return;
@@ -84,6 +92,10 @@ export default function ModuleCard({ title, module, description }: ModuleCardPro
   };
 
   useEffect(() => {
+    resizeInput();
+  }, [message]);
+
+  useEffect(() => {
     return () => {
       if (pollTimeout.current) {
         clearTimeout(pollTimeout.current);
@@ -101,13 +113,15 @@ export default function ModuleCard({ title, module, description }: ModuleCardPro
       <label className="mb-3 block text-sm font-medium text-gray-200" htmlFor={`${module}-input`}>
         Input
       </label>
-      <input
+      <textarea
         id={`${module}-input`}
-        type="text"
+        ref={inputRef}
         value={message}
         onChange={(e) => setMessage(e.target.value)}
+        onInput={resizeInput}
         placeholder="Type your message..."
-        className="mb-4 w-full rounded-2xl border border-white/10 bg-gray-950/60 px-4 py-3 text-sm text-gray-100 outline-none placeholder:text-gray-400 focus:border-purple-400"
+        rows={1}
+        className="mb-4 w-full resize-none overflow-hidden rounded-2xl border border-white/10 bg-gray-950/60 px-4 py-3 text-sm text-gray-100 outline-none placeholder:text-gray-400 focus:border-purple-400"
       />
       <button
         type="button"
