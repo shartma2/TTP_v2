@@ -60,9 +60,9 @@ def run(payload: dict[str, Any]) -> dict[str, Any]:
             "job_id": job_id,
             "timestamp": datetime.now().isoformat() ,
             "input": payload.get("message"),
-            "output": output,
+            "output": output_parsed,
         }
-        
+
         with artifact_path.open("w", encoding="utf-8") as f:
             json.dump(artifact, f, indent=2, ensure_ascii=False)
 
