@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import Any, Callable
 
 
-from modules.CoT.main import run as run_cot
+from modules.cot.main import run as run_cot
 from modules.pipeline.main import run as run_pipeline
 
 ModuleFn = Callable[[dict[str, Any] | None], Any]
