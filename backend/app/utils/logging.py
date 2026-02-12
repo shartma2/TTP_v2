@@ -1,8 +1,15 @@
-from datetime import datetime
 import logging
 from logging import Logger
 
-LOGS_DIR = "/app/backend/logs"
+from datetime import datetime
+from datetime import datetime
+import json
+from pathlib import Path
+import os
+from typing import Any
+
+LOGS_DIR = Path("/app/backend/logs")
+
 
 class _DefaultFieldsFilter(logging.Filter):
     def filter(self, record: logging.LogRecord) -> bool:
@@ -29,3 +36,15 @@ def configure_logging(level: int = logging.INFO) -> None:
 
 def get_logger(name: str) -> Logger:
     return logging.getLogger(name)
+
+def save_artifact(job_id,input: Any, output: Any):
+    artifact_path = LOGS_DIR / f"{job_id}.json"
+    artifact = {
+        "job_id": job_id,
+        "timestamp": datetime.now().isoformat() ,
+        "input": input,
+        "output": output,
+    }
+    with artifact_path.open("w", encoding="utf-8") as f:
+        json.dump(artifact, f, indent=2, ensure_ascii=False)
+    
