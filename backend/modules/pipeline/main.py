@@ -9,7 +9,6 @@ from typing import Any
 from app.utils.logging import get_logger
 
 from ._prompt import SYSTEM_INSTRUCTIONS
-from ._weather import getWeather
 from ._output import PASSModel
 
 api_key=os.environ.get("API_KEY")
