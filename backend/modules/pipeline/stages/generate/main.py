@@ -1,17 +1,13 @@
-from datetime import datetime
-import json
-from pathlib import Path
 from langchain.agents import create_agent
 from langchain_openai import ChatOpenAI
 #from langchain.openai import ChatOpenAI
-import os
 from typing import Any
-from app.utils.logging import get_logger
+import json
 
 from ._prompt import SYSTEM_INSTRUCTIONS
 from ._output import PASSModel
 
-def run(message, model):
+def run(message, model) -> PASSModel:
     agent = create_agent(
             model = model,
             tools = [],
