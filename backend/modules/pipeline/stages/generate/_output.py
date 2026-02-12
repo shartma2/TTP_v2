@@ -2,10 +2,9 @@ from pydantic import BaseModel, Field, ConfigDict
 from enum import Enum
 from typing import Any, Dict, List, Optional, Union, Literal
 
-class StateType(str, Enum):
-    SEND = "SendState"
-    RECEIVE = "ReceiveState"
-    DO = "DoState"
+# ----------------------------
+# SID
+# ----------------------------
 
 class SIDMessage(BaseModel):
     """
@@ -29,48 +28,33 @@ class SID(BaseModel):
     subjects: List[str] = Field(..., description="List of subjects involved")
     messages: List[SIDMessage] = Field(..., description="List of messages exchanged between subjects")
 
-class SendBinding(BaseModel):
-    """
-    For SendState: who is the receiver and what message is sent.
-    """
-    model_config = ConfigDict(extra="allow")
+# ----------------------------
+# Enums
+# ----------------------------
 
-    to: str = Field(..., description="Receiver subject name")
-    message: str = Field(..., description="Message name/type (must exist in SID)")
+class StateType(str, Enum):
+    SEND = "SendState"
+    RECEIVE = "ReceiveState"
+    DO = "DoState"
 
+class TransitionType(str, Enum):
+    DO = "DoTransition"
+    SEND = "SendTransition"
+    RECEIVE = "ReceiveTransition"
 
-class ReceiveBinding(BaseModel):
-    """
-    For ReceiveState: who is the sender and what message is expected.
-    """
-    model_config = ConfigDict(extra="allow")
-
-    from_: str = Field(..., alias="from", description="Sender subject name")
-    message: str = Field(..., description="Message name/type (must exist in SID)")
-
-
-class FunctionBinding(BaseModel):
-    """
-    For FunctionState: minimal internal action description.
-    """
-    model_config = ConfigDict(extra="allow")
-
-    description: Optional[str] = Field(None, description="Short description of internal work")
-
+# ----------------------------
+# SBD
+# ----------------------------
 
 class State(BaseModel):
     """
     Minimal state node. Uses a name that is unique within the subject's SBD.
-    The type determines which binding object is expected.
     """
     model_config = ConfigDict(extra="allow")
 
     name: str = Field(..., description="Unique state name within this SBD (used for transitions)")
     type: StateType = Field(..., description="State type")
-
-    send: Optional[SendBinding] = None
-    receive: Optional[ReceiveBinding] = None
-    function: Optional[FunctionBinding] = None
+    description: Optional[str] = Field(..., description="Textual description for the next step")
 
 class Transition(BaseModel):
     """
@@ -80,10 +64,14 @@ class Transition(BaseModel):
 
     source: str = Field(..., description="Source state name")
     target: str = Field(..., description="Target state name")
+    type: TransitionType
+
+    message: Optional[str] = None
+    partner: Optional[str] = Field(None, description="Communication partner (receiver for send, sender for receive)")
 
     guard: Optional[str] = Field(None, description="Optional condition label/expression")
 
-class SubjectBehavior(BaseModel):
+class SBD(BaseModel):
     """
     One SBD per subject.
     """
@@ -95,6 +83,9 @@ class SubjectBehavior(BaseModel):
     states: List[State] = Field(..., description="States for this subject")
     transitions: List[Transition] = Field(..., description="Transitions between states")
 
+# ----------------------------
+# Full PASS Model
+# ----------------------------
 class PASSModel(BaseModel):
     """
     Minimal canonical output: SID + list of SBDs.
@@ -103,4 +94,4 @@ class PASSModel(BaseModel):
     model_config = ConfigDict(extra="allow")
 
     sid: SID = Field(..., description="Subject Interaction Diagram")
-    sbd: List[SubjectBehavior] = Field(..., description="Subject Behavior Diagrams (one per subject)")
+    sbd: List[SBD] = Field(..., description="Subject Behavior Diagrams (one per subject)")
