@@ -13,17 +13,11 @@ def run(message, model):
             response_format = PASSModel
         )
     
-    result = agent.invoke(
+    response = agent.invoke(
         {"messages": [
             {"role": "system", "content": SYSTEM_INSTRUCTIONS},
             {"role": "user", "content": message},
             ]}
         )
-    
-    output = result["messages"][-1].content
-    output_parsed: Any = output
-    try:
-        output_parsed = json.loads(output)
-    except json.JSONDecodeError:
-        return output
-    return output_parsed
+
+    return response.get("structured_response")
