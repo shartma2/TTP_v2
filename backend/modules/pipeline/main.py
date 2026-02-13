@@ -1,4 +1,3 @@
-from langchain.agents import create_agent
 from langchain_openai import ChatOpenAI
 #from langchain.openai import ChatOpenAI
 import os
@@ -27,7 +26,7 @@ def run(payload: dict[str, Any]) -> dict[str, Any]:
     
         model = ChatOpenAI(
         model = payload["model"] if "model" in payload else "gpt-5.2",
-        api_key = payload["api_key"] if "api_key" in payload else os.environ.get("API_KEY"),
+        api_key = payload["api_key"] if "api_key" in payload else api_key,
         base_url = payload["base_url"] if "base_url" in payload else None,
         temperature = payload["temperature"] if "temperature" in payload else 1,
         )

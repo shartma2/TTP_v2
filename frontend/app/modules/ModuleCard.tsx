@@ -58,12 +58,7 @@ export default function ModuleCard({ title, module, description }: ModuleCardPro
 
           if (status === "done") {
             const result = job?.result;
-            const display =
-              result && "response" in result
-                ? String((result as any).response)
-                : typeof result === "string"
-                ? result
-                : "No valid response found.";
+            const display = renderResult(result)
             setOutput(display);
             setLoading(false);
             return;
@@ -142,4 +137,16 @@ export default function ModuleCard({ title, module, description }: ModuleCardPro
       </div>
     </section>
   );
+
+  function renderResult(result: any): string {
+    if(!result) return "No result.";
+
+    if(result.response) {
+      if(typeof result.response === "string") {
+        return result.response;
+      }
+      return JSON.stringify(result.response, null, 2);
+    }
+    return JSON.stringify(result, null, 2);
+  }
 }
