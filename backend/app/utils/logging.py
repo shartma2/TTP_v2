@@ -2,10 +2,8 @@ import logging
 from logging import Logger
 
 from datetime import datetime
-from datetime import datetime
 import json
 from pathlib import Path
-import os
 from typing import Any
 
 LOGS_DIR = Path("/app/backend/logs")
