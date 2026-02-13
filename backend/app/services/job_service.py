@@ -7,7 +7,7 @@ import asyncio
 
 from app.registry.modules import MODULES
 from app.utils.logging import get_logger
-from app.utils.errors import JobError
+from app.utils.exceptions import JobError
 
 logger = get_logger("services.job_service")
 
