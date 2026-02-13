@@ -5,6 +5,7 @@ import os
 from typing import Any
 from app.utils.logging import get_logger
 from app.utils.logging import save_artifact
+from app.utils.errors import MissingMessageError
 from .stages.generate.main import run as generate
 
 api_key=os.environ.get("API_KEY")
@@ -22,7 +23,7 @@ def run(payload: dict[str, Any]) -> dict[str, Any]:
     try: 
         if "message" not in payload or not message:
             logger.warning("No message provided in payload.", extra={"job_id": job_id})
-            return {"error": "No message provided in payload."}
+            raise MissingMessageError("No message provided in payload")
     
         model = ChatOpenAI(
         model = payload["model"] if "model" in payload else "gpt-5.2",
@@ -38,6 +39,9 @@ def run(payload: dict[str, Any]) -> dict[str, Any]:
         logger.info("Saved minimal run artifact", extra={"job_id": job_id})
 
         return {"response": response}
+
+    except MissingMessageError as e:
+        raise
 
     except Exception:
         logger.exception("Error occurred in Pipeline module", extra={"job_id": job_id})
