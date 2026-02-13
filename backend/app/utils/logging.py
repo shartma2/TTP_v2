@@ -36,6 +36,7 @@ def get_logger(name: str) -> Logger:
     return logging.getLogger(name)
 
 def save_artifact(job_id,input: Any, output: Any):
+    LOGS_DIR.mkdir(parents=True, exist_ok=True) 
     artifact_path = LOGS_DIR / f"{job_id}.json"
     artifact = {
         "job_id": job_id,
