@@ -8,24 +8,21 @@ from typing import Any, Dict, List, Optional, Union, Literal
 
 class SIDMessage(BaseModel):
     """
-    Minimal SID message relation:
-    sender -> receiver : message_name
+    Directed communication relation between two subjects.
     """
     model_config = ConfigDict(extra="allow")
 
-    sender: str = Field(..., description="Sender subject")
-    receiver: str = Field(..., description="Receiver subject")
-    message: str = Field(..., description="Message content")
+    sender: str = Field(..., description="Name of the Sender subject")
+    receiver: str = Field(..., description="Name of the Receiver subject")
+    message: str = Field(..., description="Message identifier")
 
 class SID(BaseModel):
     """
-    Minimal SID: subjects + message exchanges.
-    Subjects can be derived from messages, but we allow an explicit list
-    to keep the output simple and rendering-friendly.
+    Subject Interaction Diagram consisting of subjects and their message relations.
     """
     model_config = ConfigDict(extra="allow")
 
-    subjects: List[str] = Field(..., description="List of subjects involved")
+    subjects: List[str] = Field(..., description="Unique subject names participating in the interaction")
     messages: List[SIDMessage] = Field(..., description="List of messages exchanged between subjects")
 
 # ----------------------------
@@ -48,17 +45,17 @@ class TransitionType(str, Enum):
 
 class State(BaseModel):
     """
-    Minimal state node. Uses a name that is unique within the subject's SBD.
+    State node within a subject's behavior diagram.
     """
     model_config = ConfigDict(extra="allow")
 
-    name: str = Field(..., description="Unique state name within this SBD (used for transitions)")
+    name: str = Field(..., description="State identifier unique within the enclosing SBD")
     type: StateType = Field(..., description="State type")
-    description: Optional[str] = Field(..., description="Textual description for the next step")
+    description: Optional[str] = Field(..., description="Functional description of the state's internal behavior(not the message sent/received next)")
 
 class Transition(BaseModel):
     """
-    Minimal directed edge between states.
+    Directed control-flow relation between two states.
     """
     model_config = ConfigDict(extra="allow")
 
@@ -66,30 +63,29 @@ class Transition(BaseModel):
     target: str = Field(..., description="Target state name")
     type: TransitionType
 
-    message: Optional[str] = None
-    partner: Optional[str] = Field(None, description="Communication partner (receiver for send, sender for receive)")
+    message: Optional[str] = Field(None, description="Referenced message identifier for communication transitions")
+    partner: Optional[str] = Field(None, description="Communication partner subject for send/receive transitions")
 
     guard: Optional[str] = Field(None, description="Optional condition label/expression")
 
 class SBD(BaseModel):
     """
-    One SBD per subject.
+    Subject Behavior Diagram representing the internal behavior of each subject.
     """
     model_config = ConfigDict(extra="allow")
 
-    subject: str = Field(..., description="Subject name (must exist in SID.subjects)")
-    start: str = Field(..., description="Name of the start state for this subject")
+    subject: str = Field(..., description="Subject name corresponding to an entry in SID.subjects")
+    start: str = Field(..., description="Identifier of the initial state")
 
-    states: List[State] = Field(..., description="States for this subject")
-    transitions: List[Transition] = Field(..., description="Transitions between states")
+    states: List[State] = Field(..., description="Set of states belonging to this subject")
+    transitions: List[Transition] = Field(..., description="Directed transitions between states")
 
 # ----------------------------
 # Full PASS Model
 # ----------------------------
 class PASSModel(BaseModel):
     """
-    Minimal canonical output: SID + list of SBDs.
-    This object is intended to be stable regardless of internal pipeline.
+    Canonical PASS representation consisting of one SID and multiple SBDs.
     """
     model_config = ConfigDict(extra="allow")
 
