@@ -1,5 +1,4 @@
 from langchain.agents import create_agent
-from langchain_openai import ChatOpenAI
 #from langchain.openai import ChatOpenAI
 from typing import Any
 import json
@@ -7,7 +6,7 @@ import json
 from ._prompt import SYSTEM_INSTRUCTIONS
 from ._output import PASSModel
 
-def run(message, model) -> PASSModel:
+def run(message, model):
     agent = create_agent(
             model = model,
             tools = [],
@@ -26,5 +25,5 @@ def run(message, model) -> PASSModel:
     try:
         output_parsed = json.loads(output)
     except json.JSONDecodeError:
-        pass
+        return output
     return output_parsed
