@@ -3,7 +3,7 @@ import os
 from typing import Any
 from app.utils.logging import get_logger
 from app.utils.logging import save_artifact
-from backend.app.utils.exceptions import MissingMessageException
+from app.utils.exceptions import MissingMessageException
 from .stages.generate.main import run as generate
 
 api_key=os.environ.get("API_KEY")
