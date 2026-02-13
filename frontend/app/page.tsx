@@ -9,7 +9,11 @@ export default function Home() {
       module: "cot",
       description: "Send a message to the CoT module.",
     },
-    // Add more modules here as needed
+    {
+      title: "Pipeline Module",
+      module: "pipeline",
+      description: "Execute a predefined pipeline of tasks.",
+    },
   ];
 
   return (

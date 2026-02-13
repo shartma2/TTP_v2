@@ -7,6 +7,7 @@ import asyncio
 
 from app.registry.modules import MODULES
 from app.utils.logging import get_logger
+from app.utils.errors import JobError
 
 logger = get_logger("services.job_service")
 
@@ -79,6 +80,12 @@ class JobService:
                 job.result = result
                 job.status = "done"
                 logger.info("Job completed", extra={"job_id": job_id, "job_module": module})
+
+            except JobError as e:
+                job.error = e.message
+                job.status = "failed"
+                logger.warning("Job failed (controlled)",extra={"job_id": job_id, "job_module": module},)
+
             except Exception as e:
                 job.error = str(e)
                 job.status = "failed"
