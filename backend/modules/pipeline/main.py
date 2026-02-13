@@ -4,7 +4,10 @@ from typing import Any
 from app.utils.logging import get_logger
 from app.utils.logging import save_artifact
 from app.utils.exceptions import MissingMessageException
+from app.utils.exceptions import InvalidPASSModelException
 from .stages.generate.main import run as generate
+
+from .stages.generate._output import PASSModel
 
 api_key=os.environ.get("API_KEY")
 
@@ -36,9 +39,15 @@ def run(payload: dict[str, Any]) -> dict[str, Any]:
         save_artifact(job_id, payload.get("message"), response)
         logger.info("Saved minimal run artifact", extra={"job_id": job_id})
 
+        if(not isinstance(response, PASSModel)):
+            raise InvalidPASSModelException("Generated output is not a PASSModel.")
+
         return {"response": response}
 
-    except MissingMessageException as e:
+    except MissingMessageException:
+        raise
+
+    except InvalidPASSModelException:
         raise
 
     except Exception:

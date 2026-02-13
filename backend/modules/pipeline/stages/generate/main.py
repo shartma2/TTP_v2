@@ -6,7 +6,7 @@ import json
 from ._prompt import SYSTEM_INSTRUCTIONS
 from ._output import PASSModel
 
-def run(message, model):
+def run(message, model) -> PASSModel:
     agent = create_agent(
             model = model,
             tools = [],

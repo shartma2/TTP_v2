@@ -9,3 +9,9 @@ class JobError(Exception):
 
 class MissingMessageException(JobError):
     """Raised if the Input is missing."""
+
+class ModelValidationException(JobError):
+    """Raised if a model validation fails"""
+
+class InvalidPASSModelException(ModelValidationException):
+    """Generated output could not be validated as PASSModel."""
