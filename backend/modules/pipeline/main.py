@@ -1,10 +1,9 @@
 from langchain_openai import ChatOpenAI
-#from langchain.openai import ChatOpenAI
 import os
 from typing import Any
 from app.utils.logging import get_logger
 from app.utils.logging import save_artifact
-from app.utils.errors import MissingMessageError
+from app.utils.exceptions import MissingMessageException
 from .stages.generate.main import run as generate
 
 api_key=os.environ.get("API_KEY")
@@ -22,7 +21,7 @@ def run(payload: dict[str, Any]) -> dict[str, Any]:
     try: 
         if "message" not in payload or not message:
             logger.warning("No message provided in payload.", extra={"job_id": job_id})
-            raise MissingMessageError("No message provided in payload")
+            raise MissingMessageException("No message provided in payload")
     
         model = ChatOpenAI(
         model = payload["model"] if "model" in payload else "gpt-5.2",
@@ -39,7 +38,7 @@ def run(payload: dict[str, Any]) -> dict[str, Any]:
 
         return {"response": response}
 
-    except MissingMessageError as e:
+    except MissingMessageException as e:
         raise
 
     except Exception:
