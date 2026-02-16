@@ -1,0 +1,54 @@
+site_name: Bachelor Thesis Text-to-PASS-Generator
+theme:
+  name: material
+  features:
+  - navigation.instant
+  - navigation.tabs
+  - navigation.sections
+  - navigation.expand
+  - content.code.copy
+  - toc.follow
+repo_url: https://github.com/shartma2/TTP_v2
+
+
+
+nav:
+  - Home: index.md
+  - Getting Started: getting-started.md
+  - Repository:
+      - Structure: repo-structure.md
+
+  - Backend:
+      - Overview: backend/overview.md
+      - API Routes: backend/api.md
+      - App Layer:
+          - Registry: backend/app/registry.md
+          - Services: backend/app/services.md
+          - Utils: backend/app/utils.md
+      - Modules:
+          - CoT Module: backend/modules/cot.md
+          - Pipeline:
+              - Overview: backend/modules/pipeline/overview.md
+              - Stages: backend/modules/pipeline/stages.md
+              - Stage Details:
+                  - Generate: backend/modules/pipeline/stages/generate.md
+                  - Validate: backend/modules/pipeline/stages/validate.md
+                  - Repair: backend/modules/pipeline/stages/repair.md
+                  - Finalize: backend/modules/pipeline/stages/finalize.md
+
+  - Config:
+      - Overview: config/overview.md
+
+  - Frontend:
+      - Overview: frontend/overview.md
+      - Routing & Layout: frontend/routing-layout.md
+      - Modules: frontend/modules.md
+      - Utilities:
+          - Polling: frontend/util/polling.md
+
+markdown_extensions:
+  - admonition
+  - toc:
+      permalink: true
+  - pymdownx.superfences
+  - pymdownx.details
