@@ -6,6 +6,14 @@ from typing import Any, Dict, List, Optional, Union, Literal
 # SID
 # ----------------------------
 
+class Subject(BaseModel):
+    """
+    A Subject represented inside an SID
+    """
+    model_config = ConfigDict(extra="allow")
+
+    label: str = Field(..., description= "Unique name of the Subject")
+
 class SIDMessage(BaseModel):
     """
     Directed communication relation between two subjects.
@@ -22,7 +30,7 @@ class SID(BaseModel):
     """
     model_config = ConfigDict(extra="allow")
 
-    subjects: List[str] = Field(..., description="Unique subject names participating in the interaction")
+    subjects: List[Subject] = Field(..., description="List of Subject represented in the SID")
     messages: List[SIDMessage] = Field(..., description="List of messages exchanged between subjects")
 
 # ----------------------------
@@ -33,6 +41,10 @@ class StateType(str, Enum):
     SEND = "SendState"
     RECEIVE = "ReceiveState"
     DO = "DoState"
+
+class StateTraits(str, Enum):
+    START = "StartState"
+    END = "EndState"
 
 class TransitionType(str, Enum):
     DO = "DoTransition"
@@ -51,6 +63,7 @@ class State(BaseModel):
 
     name: str = Field(..., description="State identifier unique within the enclosing SBD")
     type: StateType = Field(..., description="State type")
+    traits: Optional[StateTraits] = Field(..., description="Specification if the state is and start state, end state or both")
     description: Optional[str] = Field(..., description="Functional description of the state's internal behavior(not the message sent/received next)")
 
 class Transition(BaseModel):
@@ -75,7 +88,6 @@ class SBD(BaseModel):
     model_config = ConfigDict(extra="allow")
 
     subject: str = Field(..., description="Subject name corresponding to an entry in SID.subjects")
-    start: str = Field(..., description="Identifier of the initial state")
 
     states: List[State] = Field(..., description="Set of states belonging to this subject")
     transitions: List[Transition] = Field(..., description="Directed transitions between states")
