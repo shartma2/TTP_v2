@@ -3,8 +3,8 @@ from langchain.agents import create_agent
 from typing import Any
 import json
 
-from ._prompt import SYSTEM_INSTRUCTIONS
-from ._output import PASSModel
+from modules.pipeline.schemes._prompt import SYSTEM_INSTRUCTIONS
+from modules.pipeline.schemes._output import PASSModel
 
 def run(message, model) -> PASSModel:
     agent = create_agent(
