@@ -5,9 +5,10 @@ from app.utils.logging import get_logger
 from app.utils.logging import save_artifact
 from app.utils.exceptions import MissingMessageException
 from app.utils.exceptions import InvalidPASSModelException
-from .stages.generate.main import run as generate
+from modules.pipeline.stages.generate.main import run as generate
+from modules.pipeline.stages.validate.main import run as validate
 
-from .stages.generate._output import PASSModel
+from .schemes._output import PASSModel
 
 api_key=os.environ.get("API_KEY")
 
@@ -36,7 +37,7 @@ def run(payload: dict[str, Any]) -> dict[str, Any]:
         response = generate(message, model)
         logger.info("Received response from Langchain Agent.", extra={"job_id": job_id})
 
-        save_artifact(job_id, payload.get("message"), response)
+        save_artifact(input= payload.get("message"), output= response, job_id = job_id, prefix="gen")
         logger.info("Saved minimal run artifact", extra={"job_id": job_id})
 
         if(not isinstance(response, PASSModel)):
@@ -52,5 +53,5 @@ def run(payload: dict[str, Any]) -> dict[str, Any]:
 
     except Exception:
         logger.exception("Error occurred in Pipeline module", extra={"job_id": job_id})
-        return {"error": "An error occurred while processing the request."}
+        raise
     
