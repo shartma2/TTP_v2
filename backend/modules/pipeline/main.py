@@ -43,6 +43,14 @@ def run(payload: dict[str, Any]) -> dict[str, Any]:
         if(not isinstance(response, PASSModel)):
             raise InvalidPASSModelException("Generated output is not a PASSModel.")
 
+        issues = validate(response)
+        if issues:
+            save_artifact(output=issues, job_id=job_id, prefix="val")
+            logger.warning("Validation completed. Issues were found and save to artifact", extra={"job_id":job_id})
+
+        else: 
+            logger.info("Validation completed. No issues found.", extra={"job_id":job_id})
+
         return {"response": response}
 
     except MissingMessageException:
