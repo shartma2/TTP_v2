@@ -6,7 +6,7 @@ services:
     volumes:
       - ./backend/logs:/app/backend/logs
     ports:
-      - "8000:8000"
+      - "8000"
     environment:
       - ENV=production
     env_file:
