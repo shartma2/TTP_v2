@@ -6,6 +6,8 @@ import json
 from pathlib import Path
 from typing import Any
 
+from app.utils.jsonable import to_jsonable
+
 LOGS_DIR = Path("/app/backend/logs")
 
 
@@ -35,15 +37,14 @@ def configure_logging(level: int = logging.INFO) -> None:
 def get_logger(name: str) -> Logger:
     return logging.getLogger(name)
 
-def save_artifact(job_id,input: Any, output: Any):
+def save_artifact(output: Any, input: Any = None, job_id = None,prefix: str = None):
     LOGS_DIR.mkdir(parents=True, exist_ok=True) 
-    artifact_path = LOGS_DIR / f"{job_id}.json"
+    artifact_path = LOGS_DIR / f"{prefix}_{job_id}.json"
     artifact = {
         "job_id": job_id,
         "timestamp": datetime.now().isoformat() ,
-        "input": input,
-        "output": output,
+        "input": to_jsonable(input),
+        "output": to_jsonable(output),
     }
     with artifact_path.open("w", encoding="utf-8") as f:
         json.dump(artifact, f, indent=2, ensure_ascii=False)
-    

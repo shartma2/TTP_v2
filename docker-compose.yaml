@@ -1,14 +1,4 @@
 services:
-  frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
-    ports:
-      - "3000:3000"
-    environment:
-      - NODE_ENV=production
-    env_file:
-      - ./config/frontend.env
   backend:
     build:
       context: ./backend
@@ -16,8 +6,27 @@ services:
     volumes:
       - ./backend/logs:/app/backend/logs
     ports:
-      - "8000:8000"
+      - "8000"
     environment:
       - ENV=production
     env_file:
       - ./config/backend.env
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/health"]
+      interval: 1m30s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    depends_on:
+      - backend
+    ports:
+      - "3001:3000"
+    environment:
+      - NODE_ENV=production
+    env_file:
+      - ./config/frontend.env
+
