@@ -22,6 +22,13 @@ async def create_job(
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     
+@router.get("")
+async def get_job(
+    job_service: JobService = Depends(get_job_service)
+    ):
+    jobs = job_service.get_all_jobs()
+    return jobs
+
 @router.get("/{job_id}")
 async def get_job(
     job_id: str,

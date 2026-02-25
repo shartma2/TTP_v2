@@ -3,110 +3,142 @@
 import { useMemo } from "react";
 
 type Job = {
-  jobId: string;
-  status: "queued" | "running" | "done" | "failed" | string;
-  module?: string;
-  createdAt?: string;
-  updatedAt?: string;
+    job_id: string;
+    status: "queued" | "running" | "done" | "failed" | string;
+    module?: string | null;
+    created_at?: string | null;
+    started_at?: string | null;
+    finished_at?: string | null;
+};
+
+type JobUI = {
+    jobId: string;
+    status: string;
+    module?: string;
+    createdAt?: string;
+    updatedAt?: string;
 };
 
 export default function JobsSidebar({
-  jobs,
-  loading,
-  error,
-  onReload,
+    jobs,
+    loading,
+    error,
+    onReload,
 }: {
-  jobs: Job[];
-  loading: boolean;
-  error: string;
-  onReload: () => void;
+    jobs: Job[];
+    loading: boolean;
+    error: string;
+    onReload: () => void;
 }) {
-  const sorted = useMemo(() => {
-    // newest first if timestamps exist; otherwise keep original order
-    return [...jobs].sort((a, b) => {
-      const ta = Date.parse(a.updatedAt || a.createdAt || "");
-      const tb = Date.parse(b.updatedAt || b.createdAt || "");
-      if (Number.isNaN(ta) || Number.isNaN(tb)) return 0;
-      return tb - ta;
-    });
-  }, [jobs]);
+    const normalized = useMemo<JobUI[]>(() => {
+        if (!Array.isArray(jobs)) return [];
 
-  return (
-    <aside className="h-[calc(100vh-2rem)] w-full rounded-3xl border border-white/10 bg-white/5 p-5 text-white shadow-2xl shadow-black/50 backdrop-blur-2xl">
-      <div className="mb-4 flex items-center justify-between">
-        <h3 className="text-lg font-semibold tracking-tight">Jobs</h3>
-        <button
-          type="button"
-          onClick={onReload}
-          disabled={loading}
-          className="rounded-xl bg-white/10 px-3 py-1 text-xs font-medium hover:bg-white/20 disabled:opacity-60"
-        >
-          {loading ? "Loading..." : "Reload"}
-        </button>
-      </div>
+        return jobs
+            .map((j) => {
+                const createdAt = j.created_at ?? undefined;
 
-      {error && (
-        <div className="mb-3 rounded-2xl border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-200">
-          {error}
-        </div>
-      )}
+                // we treat the most recent timestamp as "updated"
+                const updatedAt =
+                    j.finished_at ??
+                    j.started_at ??
+                    j.created_at ??
+                    undefined;
 
-      <div className="space-y-2">
-        {sorted.length === 0 ? (
-          <div className="rounded-2xl border border-white/10 bg-gray-950/40 p-4 text-sm text-gray-300">
-            No jobs loaded.
-          </div>
-        ) : (
-          sorted.map((j) => (
-            <div
-              key={j.jobId}
-              className="rounded-2xl border border-white/10 bg-gray-950/40 px-4 py-3"
-            >
-              <div className="flex items-center justify-between gap-3">
-                <div className="min-w-0">
-                  <div className="truncate text-sm font-medium text-gray-100">
-                    {j.module ?? "job"} <span className="text-gray-500">·</span>{" "}
-                    <span className="text-gray-300">{shortId(j.jobId)}</span>
-                  </div>
-                  <div className="truncate text-xs text-gray-400">{j.jobId}</div>
-                </div>
+                return {
+                    jobId: j.job_id,
+                    status: j.status,
+                    module: j.module ?? undefined,
+                    createdAt,
+                    updatedAt,
+                };
+            })
+            .filter((j) => j.jobId && j.jobId.length > 0);
+    }, [jobs]);
 
-                <span
-                  className={`shrink-0 rounded-full border px-2.5 py-1 text-xs font-semibold ${badge(
-                    j.status
-                  )}`}
+    const sorted = useMemo(() => {
+        return [...normalized].sort((a, b) => {
+            const ta = Date.parse(a.updatedAt || a.createdAt || "");
+            const tb = Date.parse(b.updatedAt || b.createdAt || "");
+            if (Number.isNaN(ta) || Number.isNaN(tb)) return 0;
+            return tb - ta;
+        });
+    }, [normalized]);
+    return (
+        <aside className="h-[calc(100vh-2rem)] w-full rounded-3xl border border-white/10 bg-white/5 p-5 text-white shadow-2xl shadow-black/50 backdrop-blur-2xl">
+            <div className="mb-4 flex items-center justify-between">
+                <h3 className="text-lg font-semibold tracking-tight">Jobs</h3>
+                <button
+                    type="button"
+                    onClick={onReload}
+                    disabled={loading}
+                    className="rounded-xl bg-white/10 px-3 py-1 text-xs font-medium hover:bg-white/20 disabled:opacity-60"
                 >
-                  {j.status}
-                </span>
-              </div>
-
-              {(j.updatedAt || j.createdAt) && (
-                <div className="mt-2 text-xs text-gray-500">
-                  {j.updatedAt ? `updated: ${fmt(j.updatedAt)}` : `created: ${fmt(j.createdAt!)}`}
-                </div>
-              )}
+                    {loading ? "Loading..." : "Reload"}
+                </button>
             </div>
-          ))
-        )}
-      </div>
-    </aside>
-  );
+
+            {error && (
+                <div className="mb-3 rounded-2xl border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-200">
+                    {error}
+                </div>
+            )}
+
+            <div className="space-y-2">
+                {sorted.length === 0 ? (
+                    <div className="rounded-2xl border border-white/10 bg-gray-950/40 p-4 text-sm text-gray-300">
+                        No jobs loaded.
+                    </div>
+                ) : (
+                    sorted.map((j) => (
+                        <div
+                            key={j.jobId}
+                            className="rounded-2xl border border-white/10 bg-gray-950/40 px-4 py-3"
+                        >
+                            <div className="flex items-center justify-between gap-3">
+                                <div className="min-w-0">
+                                    <div className="truncate text-sm font-medium text-gray-100">
+                                        {j.module ?? "job"} <span className="text-gray-500">·</span>{" "}
+                                        <span className="text-gray-300">{shortId(j.jobId)}</span>
+                                    </div>
+                                    <div className="truncate text-xs text-gray-400">{j.jobId}</div>
+                                </div>
+
+                                <span
+                                    className={`shrink-0 rounded-full border px-2.5 py-1 text-xs font-semibold ${badge(
+                                        j.status
+                                    )}`}
+                                >
+                                    {j.status}
+                                </span>
+                            </div>
+
+                            {(j.updatedAt || j.createdAt) && (
+                                <div className="mt-2 text-xs text-gray-500">
+                                    {j.updatedAt ? `updated: ${fmt(j.updatedAt)}` : `created: ${fmt(j.createdAt!)}`}
+                                </div>
+                            )}
+                        </div>
+                    ))
+                )}
+            </div>
+        </aside>
+    );
 }
 
 function shortId(id: string) {
-  return id.length <= 10 ? id : `${id.slice(0, 6)}…${id.slice(-3)}`;
+    return id.length <= 10 ? id : `${id.slice(0, 6)}…${id.slice(-3)}`;
 }
 
 function fmt(iso: string) {
-  const d = new Date(iso);
-  return Number.isNaN(d.getTime()) ? iso : d.toLocaleString();
+    const d = new Date(iso);
+    return Number.isNaN(d.getTime()) ? iso : d.toLocaleString();
 }
 
 function badge(status: string) {
-  const s = (status || "").toLowerCase();
-  if (s === "running") return "border-blue-500/30 bg-blue-500/15 text-blue-200";
-  if (s === "queued") return "border-gray-500/30 bg-gray-500/15 text-gray-200";
-  if (s === "done") return "border-green-500/30 bg-green-500/15 text-green-200";
-  if (s === "failed") return "border-red-500/30 bg-red-500/15 text-red-200";
-  return "border-white/15 bg-white/10 text-gray-200";
+    const s = (status || "").toLowerCase();
+    if (s === "running") return "border-blue-500/30 bg-blue-500/15 text-blue-200";
+    if (s === "queued") return "border-gray-500/30 bg-gray-500/15 text-gray-200";
+    if (s === "done") return "border-green-500/30 bg-green-500/15 text-green-200";
+    if (s === "failed") return "border-red-500/30 bg-red-500/15 text-red-200";
+    return "border-white/15 bg-white/10 text-gray-200";
 }

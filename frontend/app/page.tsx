@@ -5,11 +5,12 @@ import JobsSidebar from "./modules/JobsSidebar";
 import ModuleCard from "./modules/ModuleCard";
 
 type Job = {
-  jobId: string;
-  status: "queued" | "running" | "done" | "failed" | string;
-  module?: string;
-  createdAt?: string;
-  updatedAt?: string;
+    job_id: string;
+    status: "queued" | "running" | "done" | "failed" | string;
+    module?: string | null;
+    created_at?: string | null;
+    started_at?: string | null;
+    finished_at?: string | null;
 };
 
 const SIDEBAR_W = "clamp(280px,30vw,420px)";

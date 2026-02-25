@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 from typing import Any, Callable, Awaitable
-from dataclasses import dataclass
+from datetime import datetime
+from dataclasses import dataclass, asdict
 import uuid
 import asyncio
 
@@ -22,8 +23,14 @@ ModuleFunction = SyncModuleFunction | AsyncModuleFunction
 @dataclass
 class JobRecord:
     status: str
+    module: str = None
     result: Any = None
     error: str | None = None
+    created_at: datetime = None
+    started_at: datetime = None
+    finished_at: datetime = None
+
+
 
 class JobService:
     """
@@ -41,10 +48,11 @@ class JobService:
             logger.warning("Unknown module requested", extra={"job_module": module})
             raise ValueError(f"Unknown module: {module}")
 
+        timestamp = datetime.now().isoformat() + "Z"
         job_id: JobId = str(uuid.uuid4())
         payload = dict(payload or {})
         payload["job_id"] = job_id
-        self._jobs[job_id] = JobRecord(status="queued")
+        self._jobs[job_id] = JobRecord(status="queued", module=module, created_at=timestamp)
 
         logger.info("Job Queued", extra={"job_id": job_id, "job_module": module})
 
@@ -62,12 +70,33 @@ class JobService:
             "jobId": jobId,
             "status": job.status,
             "result": job.result,
-            "error": job.error
+            "error": job.error,
+            "module": job.module,
+            "created_at": job.created_at,
+            "started_at": job.started_at,
+            "finished_at": job.finished_at
             }
+    
+    def get_all_jobs(self) -> list[dict[str, Any]]:
+        result = []
+
+        for job_id, job in self._jobs.items():
+            job_dict = asdict(job)
+
+            for key in ["created_at", "started_at", "finished_at"]:
+                value = job_dict.get(key)
+                if isinstance(value, datetime):
+                    job_dict[key] = value.isoformat()
+
+            job_dict["job_id"] = str(job_id)
+            result.append(job_dict)
+        
+        return result
     
     async def _run_job(self, job_id: JobId, module: str, payload: Payload) -> None:
         async with self._semaphore:
             job = self._jobs[job_id]
+            job.started_at = datetime.now().isoformat() + "Z"
             job.status = "running"
             logger.info("Job started", extra={"job_id": job_id, "job_module": module})
             function = MODULES[module]
@@ -77,16 +106,20 @@ class JobService:
                 else:
                     result = await asyncio.to_thread(function, payload)
                 
-                job.result = result
+                job.finished_at = datetime.now().isoformat() + "Z"
                 job.status = "done"
+                job.result = result
+
                 logger.info("Job completed", extra={"job_id": job_id, "job_module": module})
 
             except JobError as e:
+                job.finished_at = datetime.now().isoformat() + "Z"
                 job.error = e.message
                 job.status = "failed"
                 logger.warning("Job failed (controlled)",extra={"job_id": job_id, "job_module": module},)
 
             except Exception as e:
+                job.finished_at = datetime.now().isoformat() + "Z"
                 job.error = str(e)
                 job.status = "failed"
                 logger.exception("Error running job", extra={"job_id": job_id, "job_module": module})

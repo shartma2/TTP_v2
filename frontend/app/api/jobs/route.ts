@@ -15,7 +15,7 @@ export async function POST(req: Request) {
       cache: "no-store",
     });
 
-    const text = await upstream.text(); 
+    const text = await upstream.text();
     return new NextResponse(text, {
       status: upstream.status,
       headers: {
@@ -24,5 +24,24 @@ export async function POST(req: Request) {
     });
   } catch (e) {
     return NextResponse.json({ error: "Proxy error (POST /api/jobs)" }, { status: 500 });
+  }
+}
+
+export async function GET() {
+  try {
+    const upstream = await fetch(`${BACKEND_URL}/api/jobs`, {
+      method: "GET",
+      cache: "no-store",
+    });
+
+    const text = await upstream.text();
+    return new NextResponse(text, {
+      status: upstream.status,
+      headers: {
+        "Content-Type": upstream.headers.get("content-type") ?? "application/json",
+      },
+    });
+  } catch {
+    return NextResponse.json({ error: "Proxy error (GET /api/jobs)" }, { status: 500 });
   }
 }
