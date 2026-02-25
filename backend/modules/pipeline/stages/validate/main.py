@@ -91,7 +91,7 @@ def _validate_sbds(model: PASSModel) -> List[Issue]:
     if len(set(sbd_subjects)) != len(sbd_subjects):
         issues.append(Issue(
             code="SBD_SUBJECT_DUPLICATE",
-            message="Duplicate SBD"
+            message="Duplicate SBD subject"
         )) 
 
     for idx_sbd, sbd in enumerate(model.sbd):
@@ -109,13 +109,13 @@ def _validate_sbds(model: PASSModel) -> List[Issue]:
                 issues.append(Issue(
                     code="TRANSITION_SOURCE_UNKNOWN",
                     message=f"Transition.source '{t.source}' not found in states of SBD({sbd.subject}).",
-                    path=f"sbd[{sbd}].transitions[{idx_t}].source",
+                    path=f"sbd[{idx_sbd}].transitions[{idx_t}].source",
                 ))
             if t.target not in state_names_set:
                 issues.append(Issue(
                     code="TRANSITION_TARGET_UNKNOWN",
                     message=f"Transition.target '{t.target}' not found in states of SBD({sbd.subject}).",
-                    path=f"sbd[{sbd}].transitions[{idx_t}].source",
+                    path=f"sbd[{idx_sbd}].transitions[{idx_t}].target",
                 ))
     
     return issues
@@ -132,7 +132,6 @@ def _validate_transitions(model: PASSModel) -> List[Issue]:
                         code="DO_TRANSITION_HAS_MESSAGE",
                         message="DoTransition must not define message or partner.",
                         path=path,
-                        context={"message": t.message, "partner": t.partner}
                     ))
             else: 
                 if t.message is None or not str(t.message).strip():
@@ -156,13 +155,15 @@ def _cross_check_messages(model: PASSModel) -> List[Issue]:
     for m in model.sid.messages:
         sid_msgs.add((m.sender, m.receiver, m.message))
 
-    sid_subjects = {s.label for s in model.sid.subjects}
+    sid_subjects = {s.label.strip() for s in model.sid.subjects if isinstance(s.label, str)}
 
     for idx_sbd, sbd in enumerate(model.sbd):
         subj = sbd.subject
         for idx_t, t in enumerate(sbd.transitions):
             if t.type == TransitionType.SEND:
                 triple = (subj, t.partner, t.message)
+                if not t.partner or not t.message:
+                    continue
                 if triple not in sid_msgs:
                     issues.append(Issue(
                         code="SEND_NOT_IN_SID",
@@ -177,6 +178,8 @@ def _cross_check_messages(model: PASSModel) -> List[Issue]:
                     ))
             elif t.type == TransitionType.RECEIVE:
                 triple = (t.partner, subj, t.message)
+                if not t.partner or not t.message:
+                    continue
                 if triple not in sid_msgs:
                     issues.append(Issue(
                         code="RECEIVE_NOT_IN_SID",
@@ -197,7 +200,7 @@ def _validate_start_end(model: PASSModel) -> List[Issue]:
 
     for idx_sbd, sbd in enumerate(model.sbd):
         start_idxs = [idx_st for idx_st, st in enumerate(sbd.states) if st.traits == StateTraits.START]
-        if len(start_idxs) !=1:
+        if len(start_idxs) != 1:
             issues.append(Issue(
                 code="START_STATE_COUNT",
                 message=f"SBD({sbd.subject}) should have exactly 1 start state (found {len(start_idxs)}).",
