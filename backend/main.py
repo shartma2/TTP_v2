@@ -10,7 +10,6 @@ from api.router import api_router
 from app.services.job_service import JobService
 from app.utils.logging import configure_logging
 
-#Debug
 from app.utils.logging import get_logger
 
 
