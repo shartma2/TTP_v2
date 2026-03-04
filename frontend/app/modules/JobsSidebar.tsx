@@ -24,11 +24,15 @@ export default function JobsSidebar({
     loading,
     error,
     onReload,
+    selectedJobId,
+    onSelectJob,
 }: {
     jobs: Job[];
     loading: boolean;
     error: string;
     onReload: () => void;
+    selectedJobId: string | null;
+    onSelectJob: (id: string) => void;
 }) {
     const normalized = useMemo<JobUI[]>(() => {
         if (!Array.isArray(jobs)) return [];
@@ -90,15 +94,18 @@ export default function JobsSidebar({
                     </div>
                 ) : (
                     sorted.map((j) => (
-                        <div
+                        <button
                             key={j.jobId}
-                            className="rounded-2xl border border-white/10 bg-gray-950/40 px-4 py-3"
+                            type="button"
+                            onClick={() => onSelectJob(j.jobId)}
+                            className={`w-full text-left rounded-2xl border px-4 py-3 transition
+                                ${selectedJobId === j.jobId ? "border-purple-400/50 bg-purple-500/10" : "border-white/10 bg-gray-950/40 hover:bg-gray-900/60"}
+                                `}
                         >
                             <div className="flex items-center justify-between gap-3">
                                 <div className="min-w-0">
                                     <div className="truncate text-sm font-medium text-gray-100">
                                         {j.module ?? "job"} <span className="text-gray-500">·</span>{" "}
-                                        <span className="text-gray-300">{shortId(j.jobId)}</span>
                                     </div>
                                     <div className="truncate text-xs text-gray-400">{j.jobId}</div>
                                 </div>
@@ -117,7 +124,7 @@ export default function JobsSidebar({
                                     {j.updatedAt ? `updated: ${fmt(j.updatedAt)}` : `created: ${fmt(j.createdAt!)}`}
                                 </div>
                             )}
-                        </div>
+                        </button>
                     ))
                 )}
             </div>
