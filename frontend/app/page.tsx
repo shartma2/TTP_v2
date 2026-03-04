@@ -2,36 +2,65 @@
 
 import { useCallback, useEffect, useState } from "react";
 import JobsSidebar from "./modules/JobsSidebar";
-import ModuleCard from "./modules/ModuleCard";
+
+import StandardModuleCard from "./modules/StandardModuleCard";
+import ResultDisplayCard from "./modules/ResultModuleCard";
+import LoopModuleCard from "./modules/LoopModuleCard"
+import ExportModuleCard from "./modules/ExportModuleCard";
 
 type Job = {
-    job_id: string;
-    status: "queued" | "running" | "done" | "failed" | string;
-    module?: string | null;
-    created_at?: string | null;
-    started_at?: string | null;
-    finished_at?: string | null;
+  job_id: string;
+  status: "queued" | "running" | "done" | "failed" | string;
+  module?: string | null;
+  created_at?: string | null;
+  started_at?: string | null;
+  finished_at?: string | null;
 };
+
+type ModuleConfig =
+  | { kind: "standard"; title: string; module: string; description?: string }
+  | { kind: "loop"; title: string; module: string; description?: string; sourceJobLabel?: string }
+  | { kind: "export"; title: string; description?: string }
+  | { kind: "display"; title: string; description?: string };
 
 const SIDEBAR_W = "clamp(280px,30vw,420px)";
 
 export default function Home() {
-  const modules = [
+  const modules: ModuleConfig[] = [
     {
+      kind: "standard",
       title: "Chain-of-Thought",
       module: "cot",
       description: "Send a message to the CoT module.",
     },
     {
+      kind: "standard",
       title: "Pipeline Module",
       module: "pipeline",
       description: "Execute a predefined pipeline of tasks.",
+    },
+    {
+      kind: "loop",
+      title: "Human-In-The-Loop Features",
+      module: "hitl",
+      description: "Execute refinement features."
+    },
+    {
+      kind: "export",
+      title: "Export",
+      description: "Export a Job to a file"
+    },
+    {
+      kind: "display",
+      title: "Result Display",
+      description: "Inspect the results of previously run jobs."
     },
   ];
 
   const [jobs, setJobs] = useState<Job[]>([]);
   const [jobsLoading, setJobsLoading] = useState(false);
   const [jobsError, setJobsError] = useState<string>("");
+  const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
 
   const reloadJobs = useCallback(async () => {
     try {
@@ -41,7 +70,6 @@ export default function Home() {
       const res = await fetch("/api/jobs", { method: "GET" });
       const data = await res.json();
 
-      // supports: { jobs: [...] } or [...]
       const list: Job[] = Array.isArray(data)
         ? data
         : Array.isArray(data?.jobs)
@@ -77,24 +105,60 @@ export default function Home() {
           loading={jobsLoading}
           error={jobsError}
           onReload={reloadJobs}
+          selectedJobId={selectedJobId}
+          onSelectJob={setSelectedJobId}
         />
       </aside>
 
-      {/* CONTENT (pushed right on lg+ so it never goes under the fixed sidebar) */}
+      {/* CONTENT */}
       <section
         className="p-6 lg:ml-[var(--sidebar-w)]
                  lg:min-h-screen lg:border-l lg:border-white/10
                  lg:[box-shadow:inset_3px_0_0_rgba(168,85,247,0.35)]"
       >
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {modules.map((m) => (
-            <ModuleCard
-              key={m.module}
-              title={m.title}
-              module={m.module}
-              description={m.description}
-            />
-          ))}
+          {modules.map((m) => {
+            if (m.kind === "standard") {
+              return (
+                <StandardModuleCard
+                  key={m.module}
+                  title={m.title}
+                  module={m.module}
+                  description={m.description}
+                />
+              );
+            }
+            if (m.kind === "loop") {
+              return (
+                <LoopModuleCard
+                  key={m.module}
+                  title={m.title}
+                  module={m.module}
+                  description={m.description}
+                  sourceJobLabel={m.sourceJobLabel}
+                  selectedJobId={selectedJobId}
+                />
+              );
+            }
+            if (m.kind === "export") {
+              return (
+                <ExportModuleCard
+                  key={m.title}
+                  title={m.title}
+                  description={m.description}
+                  selectedJobId={selectedJobId}
+                />
+              );
+            }
+            return (
+              <ResultDisplayCard
+                key={m.title}
+                title={m.title}
+                description={m.description}
+                selectedJobId={selectedJobId}
+              />
+            );
+          })}
         </div>
       </section>
     </main>
