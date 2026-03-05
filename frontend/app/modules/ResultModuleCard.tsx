@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { renderResult } from "@/app//util/renderResult";
 import ModuleCardSpec from "./ModuleCardSpec";
 
 type ResultDisplayCardProps = {
@@ -86,11 +87,3 @@ export default function ResultDisplayCard({ title, description, selectedJobId }:
   );
 }
 
-function renderResult(result: any): string {
-  if (!result) return "No result.";
-  if (result.response) {
-    if (typeof result.response === "string") return result.response;
-    return JSON.stringify(result.response, null, 2);
-  }
-  return JSON.stringify(result, null, 2);
-}

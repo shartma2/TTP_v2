@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { renderResult } from "@/app//util/renderResult";
 
 export function useJobRunner() {
   const [output, setOutput] = useState<string>("");
@@ -73,11 +74,3 @@ export function useJobRunner() {
   return { output, loading, jobId, run, setOutput };
 }
 
-function renderResult(result: any): string {
-  if (!result) return "No result.";
-  if (result.response) {
-    if (typeof result.response === "string") return result.response;
-    return JSON.stringify(result.response, null, 2);
-  }
-  return JSON.stringify(result, null, 2);
-}
