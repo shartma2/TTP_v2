@@ -23,12 +23,12 @@ ModuleFunction = SyncModuleFunction | AsyncModuleFunction
 @dataclass
 class JobRecord:
     status: str
-    module: str = None
+    module: str | None = None
     result: Any = None
     error: str | None = None
-    created_at: datetime = None
-    started_at: datetime = None
-    finished_at: datetime = None
+    created_at: str | None = None
+    started_at: str | None = None
+    finished_at: str | None = None
 
 
 
