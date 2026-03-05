@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import type { Job } from "@/app/types";
+import type { Job, JobResponse } from "@/app/types";
 import JobsSidebar from "./modules/JobsSidebar";
 
 import StandardModuleCard from "./modules/StandardModuleCard";
@@ -72,6 +72,23 @@ export default function Home() {
     }
   }, []);
 
+  const onJobUpdate = useCallback((updated: JobResponse) => {
+    const id = updated.jobId;
+    if (!id) return;
+
+    setJobs((prev) => {
+      const idx = prev.findIndex((j) => j.jobId === id);
+      if (idx === -1) return prev;
+      const copy = [...prev];
+      copy[idx] = { ...copy[idx], ...updated };
+      return copy;
+    });
+  }, []);
+
+  const onJobQueued = useCallback(() => {
+    void reloadJobs();
+  }, [reloadJobs]);
+
   return (
     <main
       className="min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950 text-white"
@@ -90,6 +107,7 @@ export default function Home() {
           onReload={reloadJobs}
           selectedJobId={selectedJobId}
           onSelectJob={setSelectedJobId}
+          onJobUpdate={onJobUpdate}
         />
       </aside>
 
@@ -108,6 +126,7 @@ export default function Home() {
                   title={m.title}
                   module={m.module}
                   description={m.description}
+                  onJobQueued={onJobQueued}
                 />
               );
             }

@@ -1,12 +1,16 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { JobStatus, JobResponse } from "@/app/types";
+import { JobResponse } from "@/app/types";
 
 export function useJobRunner() {
   const [loading, setLoading] = useState<boolean>(false);
   const [jobId, setJobId] = useState<string | null>(null);
+
+  const pollIdsRef = useRef<Set<string>>(new Set())
   const pollTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const isPolling = useRef<boolean>(false);
+  const onUpdateRef = useRef<((job: JobResponse) => void) | null>(null);
 
   useEffect(() => {
     return () => {
@@ -17,7 +21,7 @@ export function useJobRunner() {
     };
   }, []);
 
-  const run = async (module: string, payload: any): Promise<{ jid: string; job: JobResponse } | null> => {
+  const run = async (module: string, payload: any): Promise<string | null> => {
     if (loading) return null;
 
     setJobId(null);
@@ -36,34 +40,78 @@ export function useJobRunner() {
       if (!jid) throw new Error("Job ID not returned");
 
       setJobId(jid);
-
-      const poll = async (): Promise<{ jid: string; job: JobResponse }> => {
-        try {
-          const res = await fetch(`/api/jobs/${jid}`);
-          const job = (await res.json()) as JobResponse;
-          const status = job?.status;
-
-          if (status === "done" || status === "failed") {
-            setLoading(false);
-            return { jid, job };
-          }
-          return await new Promise((resolve) => {
-            pollTimeout.current = setTimeout(async () => resolve(await poll()), 1000);
-          });
-        } catch {
-          return await new Promise((resolve) => {
-            pollTimeout.current = setTimeout(async () => resolve(await poll()), 1500);
-          });
-        }
-      };
-
-      return await poll();
+      return jid;
     } catch {
-      setLoading(false);
       return null;
+    } finally {
+      setLoading(false);
     }
   };
 
-  return { loading, jobId, run };
-}
+  const setPollIds = (ids: string[]) => {
+    pollIdsRef.current = new Set(ids.filter(Boolean));
+  };
 
+  const addPollIds = (ids: string[]) => {
+    const s = pollIdsRef.current;
+    for (const id of ids) if (id) s.add(id);
+  };
+
+  const startPolling = (onUpdate: (job: JobResponse) => void, intervalMs = 1000) => {
+
+    if (isPolling.current) return;
+
+    isPolling.current = true;
+
+    onUpdateRef.current = onUpdate;
+
+    const isTerminal = (status?: string) => status === "done" || status === "failed";
+
+    const tick = async () => {
+      if (!isPolling.current) return;
+
+      const ids = Array.from(pollIdsRef.current);
+      if (ids.length === 0) {
+        isPolling.current = false;
+        return;
+      }
+
+      const results = await Promise.allSettled(
+        ids.map(async (id) => {
+          const res = await fetch(`/api/jobs/${id}`);
+          const job = (await res.json()) as JobResponse;
+          onUpdateRef.current?.(job);
+          return job;
+        })
+      );
+
+      for (const r of results) {
+        if (r.status !== "fulfilled") continue;
+        const job = r.value;
+        const id = (job.jobId) as string | undefined;
+        if (!id) continue;
+        if (isTerminal(job.status)) pollIdsRef.current.delete(id);
+      }
+
+      pollTimeout.current = setTimeout(() => {
+        tick().catch(() => {
+          if (!isPolling.current) return;
+          pollTimeout.current = setTimeout(() => {
+            tick().catch(() => { });
+          }, Math.max(1500, intervalMs));
+        });
+      }, intervalMs);
+    };
+    void tick();
+  };
+
+  const stopPolling = () => {
+    isPolling.current = false;
+    if (pollTimeout.current) {
+      clearTimeout(pollTimeout.current);
+      pollTimeout.current = null;
+    }
+  };
+
+  return { loading, jobId, run, setPollIds, addPollIds, startPolling, stopPolling };
+}

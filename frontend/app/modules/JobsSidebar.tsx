@@ -1,7 +1,8 @@
 "use client";
 
-import { useMemo } from "react";
-import type { Job, JobUI } from "@/app/types";
+import { useEffect, useMemo } from "react";
+import type { Job, JobUI, JobResponse } from "@/app/types";
+import { useJobRunner } from "./useJobRunner";
 
 
 export default function JobsSidebar({
@@ -11,6 +12,7 @@ export default function JobsSidebar({
     onReload,
     selectedJobId,
     onSelectJob,
+    onJobUpdate,
 }: {
     jobs: Job[];
     loading: boolean;
@@ -18,7 +20,10 @@ export default function JobsSidebar({
     onReload: () => void;
     selectedJobId: string | null;
     onSelectJob: (id: string) => void;
+    onJobUpdate: (job: JobResponse) => void;
 }) {
+    const { startPolling, stopPolling, setPollIds} = useJobRunner();
+
     const normalized = useMemo<JobUI[]>(() => {
         if (!Array.isArray(jobs)) return [];
 
@@ -52,6 +57,26 @@ export default function JobsSidebar({
             return tb - ta;
         });
     }, [normalized]);
+
+    useEffect(() => {
+        const activeIds = sorted
+            .filter((j) => {
+                const s = (j.status || "").toLowerCase();
+                return s === "queued" || s === "running";
+            })
+            .map((j) => j.jobId);
+
+            setPollIds(activeIds);
+
+            if(activeIds.length === 0) {
+                stopPolling();
+                return;
+            }
+
+            startPolling(onJobUpdate, 1000);
+
+    }, [sorted, setPollIds, startPolling, stopPolling, onJobUpdate]);
+
     return (
         <aside className="h-[calc(100vh-2rem)] w-full rounded-3xl border border-white/10 bg-white/5 p-5 text-white shadow-2xl shadow-black/50 backdrop-blur-2xl">
             <div className="mb-4 flex items-center justify-between">

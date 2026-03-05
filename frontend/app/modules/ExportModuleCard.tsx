@@ -73,18 +73,25 @@ export default function ExportModuleCard({
       return;
     }
 
-    const job = resp.job;
-    if (job.status === "failed") {
-      setError(job?.error?.message ?? job?.error ?? "Unknown error");
-      return;
-    }
-
-    const r = job.result as ExportJobResult | undefined;
-    if (!r?.fileName || !r?.dataBase64) {
-      setError("Export finished, but no file returned.");
-      return;
-    }
-
+    /*   const job = resp.job;
+       if (job.status === "failed") {
+         setError(job?.error?.message ?? job?.error ?? "Unknown error");
+         return;
+       }
+   
+       const r = job.result as ExportJobResult | undefined;
+       if (!r?.fileName || !r?.dataBase64) {
+         setError("Export finished, but no file returned.");
+         return;
+       }
+     */
+    //dummy
+    const r: ExportJobResult = {
+      fileName: "report.csv",
+      contentType: "text/csv",
+      sizeBytes: 32,
+      dataBase64: "Y29sMSxjb2wyCnZhbDEsdmFsMg==" // base64 for: col1,col2\nval1,val2
+    };
     const blob = base64ToBlob(r.dataBase64, r.contentType || guessContentType(format));
     const url = URL.createObjectURL(blob);
 
@@ -158,7 +165,7 @@ export default function ExportModuleCard({
   );
 }
 
-function guessContentType(format: ExportFormat){
+function guessContentType(format: ExportFormat) {
   return format === ".json" ? "application/json" : "text/plain; charset=utf-8";
 }
 
