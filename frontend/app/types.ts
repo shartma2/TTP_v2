@@ -4,11 +4,17 @@ export type Job = {
     jobId: string;
     status: JobStatus;
     module?: string | null;
+
     createdAt?: string | null;
     startedAt?: string | null;
+
     finishedAt?: string | null;
+
+    result?: any;
+    error?: any;
 };
 
+/*
 export type JobUI = {
     jobId: string;
     status: string;
@@ -17,6 +23,7 @@ export type JobUI = {
     updatedAt?: string;
 };
 
+
 export type JobResponse = {
     jobId?: string;
     status?: JobStatus;
@@ -24,4 +31,4 @@ export type JobResponse = {
     result?: any;
     error?: any;
 }
-
+*/

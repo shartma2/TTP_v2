@@ -3,12 +3,15 @@
 import { useEffect, useMemo, useState } from "react";
 import ModuleCardSpec from "./ModuleCardSpec";
 import { useJobRunner } from "./useJobRunner";
+import type { Job } from "@/app/types";
 
 type ExportModuleCardProps = {
   title?: string;
   description?: string;
   selectedJobId: string | null;
   sourceJobLabel?: string;
+  jobs: Job[];
+  onJobQueued: () => void;
 };
 
 type ExportFormat = ".json" | ".txt";
@@ -25,22 +28,26 @@ export default function ExportModuleCard({
   description = "Export a finished job to a file.",
   selectedJobId,
   sourceJobLabel,
+  jobs,
+  onJobQueued,
 }: ExportModuleCardProps) {
   const [sourceJobId, setSourceJobId] = useState<string>(selectedJobId ?? "");
   const [format, setFormat] = useState<ExportFormat>(".json");
 
+  const [exportJobId, setExportJobId] = useState<string | null>(null);
+
   const [error, setError] = useState<string>("");
   const [fileName, setFileName] = useState<string | null>(null);
-  const [fileSize, setFileSize] = useState<string | null>(null);
+  const [fileSize, setFileSize] = useState<number | null>(null);
   const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
 
-  const { loading, jobId, run } = useJobRunner();
+  const { loading, run} = useJobRunner();
 
   useEffect(() => {
     setSourceJobId(selectedJobId ?? "");
   }, [selectedJobId]);
 
-  const reset = () => {
+  const resetResult = () => {
     setError("");
     setFileName(null);
     setFileSize(null);
@@ -56,62 +63,94 @@ export default function ExportModuleCard({
     };
   }, []);
 
-  const runExport = async () => {
-    if (loading) return;
+  const exportJob = useMemo(() => {
+    if (!exportJobId) return null;
+    return jobs.find((j) => (j.jobId ?? (j as any).job_id) === exportJobId) ?? null;
+  }, [jobs, exportJobId]);
 
-    reset();
+  const exportStatus = (exportJob?.status ?? "").toLowerCase();
 
-    if (!sourceJobId.trim()) {
-      setError("Please select a source job from the sidebar or paste a Job ID.")
+  useEffect(() => {
+    if (!exportJobId) return;
+    if (!exportJob) return;
+
+    if (exportStatus === "failed") {
+      const msg = exportJob?.error?.message ?? exportJob?.error ?? "Unknown error";
+      setError(String(msg));
       return;
     }
 
-    const resp = await run("export", { sourceJobId: sourceJobId.trim(), format });
+    if (exportStatus !== "done") return;
 
-    if (!resp) {
-      setError("Failed to create or poll job.")
+    const r = ((exportJob.result as any)?.response ?? exportJob.result) as ExportJobResult | undefined;
+    console.log(r)
+    if (!r?.fileName || !r?.dataBase64) {
+      setError("Export finished, but no file returned.");
       return;
     }
 
-    /*   const job = resp.job;
-       if (job.status === "failed") {
-         setError(job?.error?.message ?? job?.error ?? "Unknown error");
-         return;
-       }
-   
-       const r = job.result as ExportJobResult | undefined;
-       if (!r?.fileName || !r?.dataBase64) {
-         setError("Export finished, but no file returned.");
-         return;
-       }
-     */
-    //dummy
-    const r: ExportJobResult = {
-      fileName: "report.csv",
-      contentType: "text/csv",
-      sizeBytes: 32,
-      dataBase64: "Y29sMSxjb2wyCnZhbDEsdmFsMg==" // base64 for: col1,col2\nval1,val2
-    };
+    if (fileName === r.fileName && downloadUrl) return;
+
+    resetResult();
+
     const blob = base64ToBlob(r.dataBase64, r.contentType || guessContentType(format));
     const url = URL.createObjectURL(blob);
 
     setFileName(r.fileName);
-    setFileSize(String(typeof r.sizeBytes === "number" ? r.sizeBytes : blob.size));
+    setFileSize(typeof r.sizeBytes === "number" ? r.sizeBytes : blob.size);
     setDownloadUrl(url);
-  };
+  }, [exportJobId, exportJob, exportStatus]);
 
   const canDownload = useMemo(() => Boolean(downloadUrl && fileName), [downloadUrl, fileName]);
+
+  const exportActive = exportStatus === "queued" || exportStatus === "running";
+  const runDisabled = loading || exportActive;
+
+  const runExport = async () => {
+    if (runDisabled) return;
+
+    setError("");
+    resetResult();
+
+    if (!sourceJobId.trim()) {
+      setError("Please select a source job from the sidebar or paste a Job ID.");
+      return;
+    }
+
+    setExportJobId(null);
+
+    const jid = await run("export", {
+      sourceJobId: sourceJobId.trim(),
+      format,
+    });
+
+    if (!jid) {
+      setError("Failed to create export job.");
+      return;
+    }
+
+    setExportJobId(jid);
+    onJobQueued();
+  };
+
+  const statusLine = useMemo(() => {
+    if (error) return `Error: ${error}`;
+    if (exportActive) return `Export ${exportStatus}...`;
+    if (fileName) return `Ready: ${fileName}${typeof fileSize === "number" ? ` · ${formatBytes(fileSize)}` : ""}`;
+    if (exportJobId && exportStatus === "done") return "Export done.";
+    return "No export yet.";
+  }, [error, exportActive, exportStatus, fileName, fileSize, exportJobId]);
 
   return (
     <ModuleCardSpec title={title} description={description}>
       <label className="mb-2 block text-sm font-medium text-gray-200" htmlFor="export-sourceJob">
-        Source Job ID
+        {sourceJobLabel ?? "Source Job ID"}
       </label>
       <input
         id="export-sourceJob"
         value={sourceJobId}
         onChange={(e) => setSourceJobId(e.target.value)}
-        disabled={loading}
+        disabled={runDisabled}
         className="mb-4 w-full rounded-2xl border border-white/10 bg-gray-950/60 px-4 py-3 text-sm text-gray-100 outline-none placeholder:text-gray-400 focus:border-purple-400 disabled:opacity-60"
       />
 
@@ -122,7 +161,7 @@ export default function ExportModuleCard({
         id="export-format"
         value={format}
         onChange={(e) => setFormat(e.target.value as ExportFormat)}
-        disabled={loading}
+        disabled={runDisabled}
         className="mb-4 w-full rounded-2xl border border-white/10 bg-gray-950/60 px-4 py-3 text-sm text-gray-100 outline-none focus:border-purple-400 disabled:opacity-60"
       >
         <option value=".json">.json</option>
@@ -132,21 +171,21 @@ export default function ExportModuleCard({
       <button
         type="button"
         onClick={runExport}
-        disabled={loading}
+        disabled={runDisabled}
         className="w-full rounded-2xl bg-white/10 px-6 py-3 text-lg font-medium tracking-wide transition hover:bg-white/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-2 focus-visible:ring-offset-gray-950 disabled:opacity-60"
       >
-        {loading ? "Running..." : "Run"}
+        {loading ? "Queuing..." : exportActive ? "Running..." : "Run"}
       </button>
 
-      {loading && jobId && <p className="mt-3 text-xs text-gray-400">Job ID: {jobId}</p>}
+      {exportJobId && (
+        <p className="mt-3 text-xs text-gray-400">
+          Export Job ID: {exportJobId}
+        </p>
+      )}
 
       <div className="mt-6 flex items-center gap-3">
         <div className="flex-1 rounded-2xl border border-white/10 bg-gray-950/60 px-4 py-3 text-sm text-gray-200 shadow-inner backdrop-blur-xl">
-          {error
-            ? `Error: ${error}`
-            : fileName
-              ? `Ready: ${fileName}${fileSize ? ` · ${formatBytes(Number(fileSize))}` : ""}`
-              : "No export yet."}
+          {statusLine}
         </div>
 
         <a

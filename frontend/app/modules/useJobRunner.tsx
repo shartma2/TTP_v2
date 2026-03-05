@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { JobResponse } from "@/app/types";
+import { Job } from "@/app/types";
 
 export function useJobRunner() {
   const [loading, setLoading] = useState<boolean>(false);
@@ -10,7 +10,7 @@ export function useJobRunner() {
   const pollIdsRef = useRef<Set<string>>(new Set())
   const pollTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isPolling = useRef<boolean>(false);
-  const onUpdateRef = useRef<((job: JobResponse) => void) | null>(null);
+  const onUpdateRef = useRef<((job: Job) => void) | null>(null);
 
   useEffect(() => {
     return () => {
@@ -57,7 +57,7 @@ export function useJobRunner() {
     for (const id of ids) if (id) s.add(id);
   };
 
-  const startPolling = (onUpdate: (job: JobResponse) => void, intervalMs = 1000) => {
+  const startPolling = (onUpdate: (job: Job) => void, intervalMs = 1000) => {
 
     if (isPolling.current) return;
 
@@ -79,7 +79,7 @@ export function useJobRunner() {
       const results = await Promise.allSettled(
         ids.map(async (id) => {
           const res = await fetch(`/api/jobs/${id}`);
-          const job = (await res.json()) as JobResponse;
+          const job = (await res.json()) as Job;
           onUpdateRef.current?.(job);
           return job;
         })

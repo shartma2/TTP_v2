@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import type { Job, JobResponse } from "@/app/types";
+import type { Job } from "@/app/types";
 import JobsSidebar from "./modules/JobsSidebar";
 
 import StandardModuleCard from "./modules/StandardModuleCard";
@@ -72,7 +72,7 @@ export default function Home() {
     }
   }, []);
 
-  const onJobUpdate = useCallback((updated: JobResponse) => {
+  const onJobUpdate = useCallback((updated: Job) => {
     const id = updated.jobId;
     if (!id) return;
 
@@ -149,6 +149,8 @@ export default function Home() {
                   title={m.title}
                   description={m.description}
                   selectedJobId={selectedJobId}
+                  jobs={jobs}
+                  onJobQueued={onJobQueued}
                 />
               );
             }
