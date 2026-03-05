@@ -12,8 +12,13 @@ type StandardModuleCardProps = {
 
 export default function StandardModuleCard({ title, module, description }: StandardModuleCardProps) {
   const [message, setMessage] = useState<string>("");
+  const [rawResult, setRawResult] = useState<any>(null);
+  const [error, setError] = useState<string>("");
+  const [statusText, setStatusText] = useState<string>("");
+
+  const { loading, jobId, run } = useJobRunner();
+
   const inputRef = useRef<HTMLTextAreaElement | null>(null);
-  const { output, loading, jobId, run } = useJobRunner();
 
   const resizeInput = () => {
     const el = inputRef.current;
@@ -22,6 +27,31 @@ export default function StandardModuleCard({ title, module, description }: Stand
     el.style.height = `${el.scrollHeight}px`;
   };
 
+
+  const runModule = async () => {
+    if (loading) return;
+    
+    setRawResult(null);
+    setError("");
+    setStatusText("");
+
+    const resp = await run (module, { message });
+
+    if (!resp) {
+      setError("Failed to create or poll job.")
+      return;
+    }
+
+    const job = resp.job;
+    if(job.status === "failed") {
+      setError(job?.error?.message ?? job?.error ?? "Unknown error");
+      return;
+    }
+
+    setRawResult(job.result ?? null);
+    setStatusText("Done");
+  };
+// Im Moment wird der Output nicht direkt angezeit. Das einf so lassen. Den running button zu queueing button machen und dann wieder freigeben. Polling umstellen für sidebar wenn job der nicht finished ist exisitert. Result display als einzige ergebnisanziege verwenden. 
   useEffect(() => {
     resizeInput();
   }, [message]);
@@ -32,10 +62,10 @@ export default function StandardModuleCard({ title, module, description }: Stand
       description={description}
       footer={
         <div
-          className="min-h-[6rem] w-full rounded-2xl border border-white/10 bg-gray-950/60 p-4 text-sm text-gray-200 shadow-inner backdrop-blur-xl"
+          className="min-h-[3rem] w-full rounded-2xl border border-white/10 bg-gray-950/60 p-4 text-sm text-gray-200 shadow-inner backdrop-blur-xl"
           aria-live="polite"
         >
-          {output || "Output will appear here."}
+          {statusText || "Output will appear here."}
         </div>
       }
     >
@@ -56,7 +86,7 @@ export default function StandardModuleCard({ title, module, description }: Stand
 
       <button
         type="button"
-        onClick={() => run(module, { message })}
+        onClick={runModule}
         disabled={loading}
         className="w-full rounded-2xl bg-white/10 px-6 py-3 text-lg font-medium tracking-wide transition hover:bg-white/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-2 focus-visible:ring-offset-gray-950 disabled:opacity-60"
       >

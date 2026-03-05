@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import ModuleCardSpec from "./ModuleCardSpec";
-import { useJobRunner } from "./useJobRunner";
+//import { useJobRunner } from "./useJobRunner";
 
 type LoopModuleCardProps = {
   title: string;
@@ -21,7 +21,7 @@ export default function LoopModuleCard({
 }: LoopModuleCardProps) {
   const [sourceJobId, setSourceJobId] = useState<string>(selectedJobId ?? "");
   const [note, setNote] = useState<string>(""); // optional second input (example)
-  const { output, loading, jobId, run, setOutput } = useJobRunner();
+//  const { output, loading, jobId, run, setOutput } = useJobRunner();
 
   useEffect(() => {
     setSourceJobId(selectedJobId ?? "");
@@ -29,10 +29,10 @@ export default function LoopModuleCard({
 
   const runDerived = () => {
     if (!sourceJobId.trim()) {
-      setOutput("Please select a source job in the sidebar (or paste a Job ID).");
+//      setOutput("Please select a source job in the sidebar (or paste a Job ID).");
       return;
     }
-    run(module, { sourceJobId, note });
+//    run(module, { sourceJobId, note });
   };
 
   return (
@@ -44,7 +44,6 @@ export default function LoopModuleCard({
           className="min-h-[6rem] w-full rounded-2xl border border-white/10 bg-gray-950/60 p-4 text-sm text-gray-200 shadow-inner backdrop-blur-xl"
           aria-live="polite"
         >
-          {output || "Output will appear here."}
         </div>
       }
     >
@@ -73,13 +72,13 @@ export default function LoopModuleCard({
       <button
         type="button"
         onClick={runDerived}
-        disabled={loading}
+        disabled={true}
         className="w-full rounded-2xl bg-white/10 px-6 py-3 text-lg font-medium tracking-wide transition hover:bg-white/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-2 focus-visible:ring-offset-gray-950 disabled:opacity-60"
       >
-        {loading ? "Running..." : "Run"}
+        {true ? "Running..." : "Run"}
       </button>
 
-      {loading && jobId && <p className="mt-3 text-xs text-gray-400">Job ID: {jobId}</p>}
+      {true && true && <p className="mt-3 text-xs text-gray-400">Job ID: {"jobId"}</p>}
     </ModuleCardSpec>
   );
 }

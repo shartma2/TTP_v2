@@ -62,11 +62,7 @@ export default function Home() {
       const res = await fetch("/api/jobs", { method: "GET" });
       const data = await res.json();
 
-      const list: Job[] = Array.isArray(data)
-        ? data
-        : Array.isArray(data?.jobs)
-          ? data.jobs
-          : [];
+      const list: Job[] = Array.isArray(data) ? (data as Job[]) : [];
 
       setJobs(list);
     } catch {
@@ -75,11 +71,6 @@ export default function Home() {
       setJobsLoading(false);
     }
   }, []);
-
-  // Optional initial load (NOT polling)
-  useEffect(() => {
-    reloadJobs();
-  }, [reloadJobs]);
 
   return (
     <main

@@ -1,10 +1,9 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { renderResult } from "@/app//util/renderResult";
+import { JobStatus, JobResponse } from "@/app/types";
 
 export function useJobRunner() {
-  const [output, setOutput] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
   const [jobId, setJobId] = useState<string | null>(null);
   const pollTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -18,10 +17,9 @@ export function useJobRunner() {
     };
   }, []);
 
-  const run = async (module: string, payload: any) => {
-    if (loading) return;
+  const run = async (module: string, payload: any): Promise<{ jid: string; job: JobResponse } | null> => {
+    if (loading) return null;
 
-    setOutput("");
     setJobId(null);
 
     try {
@@ -38,39 +36,34 @@ export function useJobRunner() {
       if (!jid) throw new Error("Job ID not returned");
 
       setJobId(jid);
-      setOutput("Job queued. Waiting for result...");
 
-      const poll = async () => {
+      const poll = async (): Promise<{ jid: string; job: JobResponse }> => {
         try {
           const res = await fetch(`/api/jobs/${jid}`);
-          const job = await res.json();
-          const status = job?.status as string | undefined;
+          const job = (await res.json()) as JobResponse;
+          const status = job?.status;
 
-          if (status === "done") {
-            setOutput(renderResult(job?.result));
+          if (status === "done" || status === "failed") {
             setLoading(false);
-            return;
+            return { jid, job };
           }
-
-          if (status === "failed") {
-            setOutput(`Job failed: ${job?.error ?? "Unknown error"}`);
-            setLoading(false);
-            return;
-          }
-
-          pollTimeout.current = setTimeout(poll, 1000);
+          return await new Promise((resolve) => {
+            pollTimeout.current = setTimeout(async () => resolve(await poll()), 1000);
+          });
         } catch {
-          pollTimeout.current = setTimeout(poll, 1500);
+          return await new Promise((resolve) => {
+            pollTimeout.current = setTimeout(async () => resolve(await poll()), 1500);
+          });
         }
       };
 
-      await poll();
+      return await poll();
     } catch {
-      setOutput("Failed to create or poll job.");
       setLoading(false);
+      return null;
     }
   };
 
-  return { output, loading, jobId, run, setOutput };
+  return { loading, jobId, run };
 }
 

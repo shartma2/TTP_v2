@@ -1,8 +1,8 @@
 "use client";
 
 import { useMemo } from "react";
-import type { Job } from "@/app/types";
-import type { JobUI } from "@/app/types";
+import type { Job, JobUI } from "@/app/types";
+
 
 export default function JobsSidebar({
     jobs,
@@ -24,17 +24,17 @@ export default function JobsSidebar({
 
         return jobs
             .map((j) => {
-                const createdAt = j.created_at ?? undefined;
+                const createdAt = j.createdAt ?? undefined;
 
                 // we treat the most recent timestamp as "updated"
                 const updatedAt =
-                    j.finished_at ??
-                    j.started_at ??
-                    j.created_at ??
+                    j.finishedAt ??
+                    j.startedAt ??
+                    j.createdAt ??
                     undefined;
 
                 return {
-                    jobId: j.job_id,
+                    jobId: j.jobId,
                     status: j.status,
                     module: j.module ?? undefined,
                     createdAt,

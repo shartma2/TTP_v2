@@ -13,6 +13,13 @@ type ExportModuleCardProps = {
 
 type ExportFormat = ".json" | ".txt";
 
+type ExportJobResult = {
+  fileName: string;
+  contentType: string;
+  sizeBytes: number;
+  dataBase64: string;
+};
+
 export default function ExportModuleCard({
   title = "Export",
   description = "Export a finished job to a file.",
@@ -22,124 +29,85 @@ export default function ExportModuleCard({
   const [sourceJobId, setSourceJobId] = useState<string>(selectedJobId ?? "");
   const [format, setFormat] = useState<ExportFormat>(".json");
 
-  // For export we want a short status line, not a big result box
-  const [statusText, setStatusText] = useState<string>("");
+  const [error, setError] = useState<string>("");
   const [fileName, setFileName] = useState<string | null>(null);
+  const [fileSize, setFileSize] = useState<string | null>(null);
   const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
 
-  const { loading, jobId, run, setOutput } = useJobRunner();
+  const { loading, jobId, run } = useJobRunner();
 
   useEffect(() => {
     setSourceJobId(selectedJobId ?? "");
   }, [selectedJobId]);
 
-  const payload = useMemo(() => {
-    return {
-      sourceJobId: sourceJobId || null,
-      format,
+  const reset = () => {
+    setError("");
+    setFileName(null);
+    setFileSize(null);
+    if (downloadUrl) {
+      URL.revokeObjectURL(downloadUrl);
+      setDownloadUrl(null);
+    }
+  };
+
+  useEffect(() => {
+    return () => {
+      if (downloadUrl) URL.revokeObjectURL(downloadUrl);
     };
-  }, [sourceJobId, format]);
+  }, []);
 
   const runExport = async () => {
     if (loading) return;
 
-    setStatusText("");
-    setFileName(null);
-    setDownloadUrl(null);
+    reset();
 
     if (!sourceJobId.trim()) {
-      setStatusText("Please select a source job in the sidebar (or paste a Job ID).");
+      setError("Please select a source job from the sidebar or paste a Job ID.")
       return;
     }
 
-    try {
-      await run("export", payload);
+    const resp = await run("export", { sourceJobId: sourceJobId.trim(), format });
 
-      const jid = jobId; 
-      const resolvedJobId =
-        jid ?? null;
-
-      if (!resolvedJobId) {
-        setStatusText("Export finished. (No job id available to fetch file metadata.)");
-        return;
-      }
-
-      const res = await fetch(`/api/jobs/${resolvedJobId}`);
-      const job = await res.json();
-
-      if (job?.status === "failed") {
-        setStatusText(`Export failed: ${job?.error ?? "Unknown error"}`);
-        return;
-      }
-
-      const result = job?.result ?? {};
-      const name =
-        result?.fileName ??
-        result?.filename ??
-        result?.name ??
-        null;
-
-      const url =
-        result?.url ??
-        result?.downloadUrl ??
-        (name ? `/api/jobs/${resolvedJobId}/download` : null);
-
-      if (name) {
-        setFileName(String(name));
-        setDownloadUrl(url ? String(url) : null);
-        setStatusText(`Ready: ${name}`);
-      } else {
-        setStatusText("Export finished, but no file name returned.");
-      }
-    } catch {
-      setStatusText("Failed to create or poll export job.");
-    } finally {
-      setOutput("");
+    if (!resp) {
+      setError("Failed to create or poll job.")
+      return;
     }
+
+    const job = resp.job;
+    if (job.status === "failed") {
+      setError(job?.error?.message ?? job?.error ?? "Unknown error");
+      return;
+    }
+
+    const r = job.result as ExportJobResult | undefined;
+    if (!r?.fileName || !r?.dataBase64) {
+      setError("Export finished, but no file returned.");
+      return;
+    }
+
+    const blob = base64ToBlob(r.dataBase64, r.contentType || guessContentType(format));
+    const url = URL.createObjectURL(blob);
+
+    setFileName(r.fileName);
+    setFileSize(String(typeof r.sizeBytes === "number" ? r.sizeBytes : blob.size));
+    setDownloadUrl(url);
   };
 
-  const canDownload = Boolean(fileName && downloadUrl);
+  const canDownload = useMemo(() => Boolean(downloadUrl && fileName), [downloadUrl, fileName]);
 
   return (
-    <ModuleCardSpec
-      title={title}
-      description={description}
-      footer={
-        <div className="flex items-center gap-3">
-          <div
-            className="flex-1 rounded-2xl border border-white/10 bg-gray-950/60 px-4 py-3 text-sm text-gray-200 shadow-inner backdrop-blur-xl"
-            aria-live="polite"
-          >
-            {statusText || "No export yet."}
-          </div>
-
-          <a
-            href={downloadUrl ?? "#"}
-            download={fileName ?? undefined}
-            aria-disabled={!canDownload}
-            onClick={(e) => {
-              if (!canDownload) e.preventDefault();
-            }}
-            className={`rounded-2xl px-4 py-3 text-sm font-medium transition
-              ${canDownload ? "bg-white/10 hover:bg-white/20" : "bg-white/5 opacity-50 cursor-not-allowed"}`}
-          >
-            Download
-          </a>
-        </div>
-      }
-    >
+    <ModuleCardSpec title={title} description={description}>
       <label className="mb-2 block text-sm font-medium text-gray-200" htmlFor="export-sourceJob">
-        {sourceJobLabel ?? "Source Job ID"}
+        Source Job ID
       </label>
       <input
         id="export-sourceJob"
         value={sourceJobId}
         onChange={(e) => setSourceJobId(e.target.value)}
-        placeholder="Click a job in the sidebar or paste Job ID..."
-        className="mb-4 w-full rounded-2xl border border-white/10 bg-gray-950/60 px-4 py-3 text-sm text-gray-100 outline-none placeholder:text-gray-400 focus:border-purple-400"
+        disabled={loading}
+        className="mb-4 w-full rounded-2xl border border-white/10 bg-gray-950/60 px-4 py-3 text-sm text-gray-100 outline-none placeholder:text-gray-400 focus:border-purple-400 disabled:opacity-60"
       />
 
-      
       <label className="mb-2 block text-sm font-medium text-gray-200" htmlFor="export-format">
         Format
       </label>
@@ -147,7 +115,8 @@ export default function ExportModuleCard({
         id="export-format"
         value={format}
         onChange={(e) => setFormat(e.target.value as ExportFormat)}
-        className="mb-4 w-full rounded-2xl border border-white/10 bg-gray-950/60 px-4 py-3 text-sm text-gray-100 outline-none focus:border-purple-400"
+        disabled={loading}
+        className="mb-4 w-full rounded-2xl border border-white/10 bg-gray-950/60 px-4 py-3 text-sm text-gray-100 outline-none focus:border-purple-400 disabled:opacity-60"
       >
         <option value=".json">.json</option>
         <option value=".txt">.txt</option>
@@ -163,6 +132,47 @@ export default function ExportModuleCard({
       </button>
 
       {loading && jobId && <p className="mt-3 text-xs text-gray-400">Job ID: {jobId}</p>}
+
+      <div className="mt-6 flex items-center gap-3">
+        <div className="flex-1 rounded-2xl border border-white/10 bg-gray-950/60 px-4 py-3 text-sm text-gray-200 shadow-inner backdrop-blur-xl">
+          {error
+            ? `Error: ${error}`
+            : fileName
+              ? `Ready: ${fileName}${fileSize ? ` · ${formatBytes(Number(fileSize))}` : ""}`
+              : "No export yet."}
+        </div>
+
+        <a
+          href={downloadUrl ?? "#"}
+          download={fileName ?? undefined}
+          onClick={(e) => {
+            if (!canDownload) e.preventDefault();
+          }}
+          className={`rounded-2xl px-4 py-3 text-sm font-medium transition ${canDownload ? "bg-white/10 hover:bg-white/20" : "bg-white/5 opacity-50 cursor-not-allowed"
+            }`}
+        >
+          Download
+        </a>
+      </div>
     </ModuleCardSpec>
   );
+}
+
+function guessContentType(format: ExportFormat){
+  return format === ".json" ? "application/json" : "text/plain; charset=utf-8";
+}
+
+function base64ToBlob(b64: string, contentType: string) {
+  const binary = atob(b64);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+  return new Blob([bytes], { type: contentType });
+}
+
+function formatBytes(bytes: number) {
+  if (bytes < 1024) return `${bytes} B`;
+  const kb = bytes / 1024;
+  if (kb < 1024) return `${kb.toFixed(1)} KB`;
+  const mb = kb / 1024;
+  return `${mb.toFixed(1)} MB`;
 }
