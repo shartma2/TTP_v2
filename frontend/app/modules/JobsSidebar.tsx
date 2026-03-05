@@ -1,23 +1,8 @@
 "use client";
 
 import { useMemo } from "react";
-
-type Job = {
-    job_id: string;
-    status: "queued" | "running" | "done" | "failed" | string;
-    module?: string | null;
-    created_at?: string | null;
-    started_at?: string | null;
-    finished_at?: string | null;
-};
-
-type JobUI = {
-    jobId: string;
-    status: string;
-    module?: string;
-    createdAt?: string;
-    updatedAt?: string;
-};
+import type { Job } from "@/app/types";
+import type { JobUI } from "@/app/types";
 
 export default function JobsSidebar({
     jobs,

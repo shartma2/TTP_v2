@@ -1,21 +1,13 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import type { Job } from "@/app/types";
 import JobsSidebar from "./modules/JobsSidebar";
 
 import StandardModuleCard from "./modules/StandardModuleCard";
 import ResultDisplayCard from "./modules/ResultModuleCard";
 import LoopModuleCard from "./modules/LoopModuleCard"
 import ExportModuleCard from "./modules/ExportModuleCard";
-
-type Job = {
-  job_id: string;
-  status: "queued" | "running" | "done" | "failed" | string;
-  module?: string | null;
-  created_at?: string | null;
-  started_at?: string | null;
-  finished_at?: string | null;
-};
 
 type ModuleConfig =
   | { kind: "standard"; title: string; module: string; description?: string }
