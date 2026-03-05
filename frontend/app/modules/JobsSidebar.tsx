@@ -132,10 +132,6 @@ export default function JobsSidebar({
     );
 }
 
-function shortId(id: string) {
-    return id.length <= 10 ? id : `${id.slice(0, 6)}…${id.slice(-3)}`;
-}
-
 function fmt(iso: string) {
     const d = new Date(iso);
     return Number.isNaN(d.getTime()) ? iso : d.toLocaleString();
