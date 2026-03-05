@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import ModuleCardSpec from "./ModuleCardSpec";
 import { useJobRunner } from "./useJobRunner";
 
-type DerivedModuleCardProps = {
+type LoopModuleCardProps = {
   title: string;
   module: string;
   description?: string;
@@ -12,13 +12,13 @@ type DerivedModuleCardProps = {
   sourceJobLabel?: string;
 };
 
-export default function DerivedModuleCard({
+export default function LoopModuleCard({
   title,
   module,
   description,
   selectedJobId,
   sourceJobLabel,
-}: DerivedModuleCardProps) {
+}: LoopModuleCardProps) {
   const [sourceJobId, setSourceJobId] = useState<string>(selectedJobId ?? "");
   const [note, setNote] = useState<string>(""); // optional second input (example)
   const { output, loading, jobId, run, setOutput } = useJobRunner();
