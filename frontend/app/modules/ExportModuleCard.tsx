@@ -119,9 +119,12 @@ export default function ExportModuleCard({
 
     setExportJobId(null);
 
+    const res = await fetch(`/api/jobs/${sourceJobId.trim()}`);
+
     const jid = await run("export", {
-      sourceJobId: sourceJobId.trim(),
-      format,
+      source_job_id: sourceJobId.trim(),
+      format: format,
+      result: res.ok ? await res.json() : null,
     });
 
     if (!jid) {

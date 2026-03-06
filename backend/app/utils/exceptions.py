@@ -15,3 +15,9 @@ class ModelValidationException(JobError):
 
 class InvalidPASSModelException(ModelValidationException):
     """Generated output could not be validated as PASSModel."""
+
+class InvalidExportFormatException(JobError):
+    """Raised if the export format is not supported."""
+
+class JobNotFoundException(JobError):
+    """Raised if a job with the given ID is not found."""
