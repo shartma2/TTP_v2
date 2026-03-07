@@ -270,6 +270,3 @@ def _to_owl_bytes(data: str, model_label: str = "PASS_Model") -> bytes:
 
 
     return bytes
-
-# to_bytes sollte überflüssig sein. jede function muss selber testen ob sie ergebnis convertieren kann. Sonst raise mit entsprechendem Fehler. Für OWL Convert sollte auf PASSModel geprüft werden sonsta auch raise. txt sollte möglichst immer gehen.
-# owl converter sollte direkt hier stehen. andere file obsolet
