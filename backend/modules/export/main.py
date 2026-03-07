@@ -10,7 +10,7 @@ from app.utils.logging import get_logger
 from app.utils.exceptions import InvalidExportFormatException, JobNotFoundException
 from modules.pipeline.schemes._output import PASSModel
 
-logger = get_logger("modules.pipeline.main")
+logger = get_logger("modules.export.main")
 
 def run(payload: dict[str, Any]) -> dict[str, Any]:
     
