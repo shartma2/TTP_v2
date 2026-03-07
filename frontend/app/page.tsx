@@ -62,11 +62,7 @@ export default function Home() {
       const res = await fetch("/api/jobs", { method: "GET" });
       const data = await res.json();
 
-      const list: Job[] = Array.isArray(data)
-        ? data
-        : Array.isArray(data?.jobs)
-          ? data.jobs
-          : [];
+      const list: Job[] = Array.isArray(data) ? (data as Job[]) : [];
 
       setJobs(list);
     } catch {
@@ -76,9 +72,25 @@ export default function Home() {
     }
   }, []);
 
-  // Optional initial load (NOT polling)
+  const onJobUpdate = useCallback((updated: Job) => {
+    const id = updated.jobId;
+    if (!id) return;
+
+    setJobs((prev) => {
+      const idx = prev.findIndex((j) => j.jobId === id);
+      if (idx === -1) return prev;
+      const copy = [...prev];
+      copy[idx] = { ...copy[idx], ...updated };
+      return copy;
+    });
+  }, []);
+
+  const onJobQueued = useCallback(() => {
+    void reloadJobs();
+  }, [reloadJobs]);
+
   useEffect(() => {
-    reloadJobs();
+    void reloadJobs();
   }, [reloadJobs]);
 
   return (
@@ -99,6 +111,7 @@ export default function Home() {
           onReload={reloadJobs}
           selectedJobId={selectedJobId}
           onSelectJob={setSelectedJobId}
+          onJobUpdate={onJobUpdate}
         />
       </aside>
 
@@ -117,6 +130,7 @@ export default function Home() {
                   title={m.title}
                   module={m.module}
                   description={m.description}
+                  onJobQueued={onJobQueued}
                 />
               );
             }
@@ -139,6 +153,8 @@ export default function Home() {
                   title={m.title}
                   description={m.description}
                   selectedJobId={selectedJobId}
+                  jobs={jobs}
+                  onJobQueued={onJobQueued}
                 />
               );
             }

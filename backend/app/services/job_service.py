@@ -83,12 +83,12 @@ class JobService:
         for job_id, job in self._jobs.items():
             job_dict = asdict(job)
 
-            for key in ["created_at", "started_at", "finished_at"]:
+            for key in ["createdAt", "startedAt", "finishedAt"]:
                 value = job_dict.get(key)
                 if isinstance(value, datetime):
                     job_dict[key] = value.isoformat()
 
-            job_dict["job_id"] = str(job_id)
+            job_dict["jobId"] = str(job_id)
             result.append(job_dict)
         
         return result

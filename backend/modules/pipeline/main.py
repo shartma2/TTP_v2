@@ -28,10 +28,10 @@ def run(payload: dict[str, Any]) -> dict[str, Any]:
             raise MissingMessageException("No message provided in payload")
     
         model = ChatOpenAI(
-        model = payload["model"] if "model" in payload else "gpt-5.2",
-        api_key = payload["api_key"] if "api_key" in payload else api_key,
-        base_url = payload["base_url"] if "base_url" in payload else None,
-        temperature = payload["temperature"] if "temperature" in payload else 1,
+        model = payload.get("model", "gpt-5.2"),
+        api_key = payload.get("api_key", api_key),
+        base_url = payload.get("base_url", None),
+        temperature = payload.get("temperature", 1),
         )
         
         response = generate(message, model)

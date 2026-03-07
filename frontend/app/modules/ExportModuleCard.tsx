@@ -3,131 +3,148 @@
 import { useEffect, useMemo, useState } from "react";
 import ModuleCardSpec from "./ModuleCardSpec";
 import { useJobRunner } from "./useJobRunner";
+import type { Job } from "@/app/types";
 
 type ExportModuleCardProps = {
   title?: string;
   description?: string;
   selectedJobId: string | null;
   sourceJobLabel?: string;
+  jobs: Job[];
+  onJobQueued: () => void;
 };
 
-type ExportFormat = ".json" | ".txt";
+type ExportFormat = ".json" | ".txt" | ".owl";
+
+type ExportJobResult = {
+  fileName: string;
+  contentType: string;
+  sizeBytes: number;
+  dataBase64: string;
+};
 
 export default function ExportModuleCard({
   title = "Export",
   description = "Export a finished job to a file.",
   selectedJobId,
   sourceJobLabel,
+  jobs,
+  onJobQueued,
 }: ExportModuleCardProps) {
   const [sourceJobId, setSourceJobId] = useState<string>(selectedJobId ?? "");
   const [format, setFormat] = useState<ExportFormat>(".json");
 
-  // For export we want a short status line, not a big result box
-  const [statusText, setStatusText] = useState<string>("");
+  const [exportJobId, setExportJobId] = useState<string | null>(null);
+
+  const [error, setError] = useState<string>("");
   const [fileName, setFileName] = useState<string | null>(null);
+  const [fileSize, setFileSize] = useState<number | null>(null);
   const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
 
-  const { loading, jobId, run, setOutput } = useJobRunner();
+  const { loading, run } = useJobRunner();
 
   useEffect(() => {
     setSourceJobId(selectedJobId ?? "");
   }, [selectedJobId]);
 
-  const payload = useMemo(() => {
-    return {
-      sourceJobId: sourceJobId || null,
-      format,
-    };
-  }, [sourceJobId, format]);
-
-  const runExport = async () => {
-    if (loading) return;
-
-    setStatusText("");
+  const resetResult = () => {
+    setError("");
     setFileName(null);
-    setDownloadUrl(null);
-
-    if (!sourceJobId.trim()) {
-      setStatusText("Please select a source job in the sidebar (or paste a Job ID).");
-      return;
-    }
-
-    try {
-      await run("export", payload);
-
-      const jid = jobId; 
-      const resolvedJobId =
-        jid ?? null;
-
-      if (!resolvedJobId) {
-        setStatusText("Export finished. (No job id available to fetch file metadata.)");
-        return;
-      }
-
-      const res = await fetch(`/api/jobs/${resolvedJobId}`);
-      const job = await res.json();
-
-      if (job?.status === "failed") {
-        setStatusText(`Export failed: ${job?.error ?? "Unknown error"}`);
-        return;
-      }
-
-      const result = job?.result ?? {};
-      const name =
-        result?.fileName ??
-        result?.filename ??
-        result?.name ??
-        null;
-
-      const url =
-        result?.url ??
-        result?.downloadUrl ??
-        (name ? `/api/jobs/${resolvedJobId}/download` : null);
-
-      if (name) {
-        setFileName(String(name));
-        setDownloadUrl(url ? String(url) : null);
-        setStatusText(`Ready: ${name}`);
-      } else {
-        setStatusText("Export finished, but no file name returned.");
-      }
-    } catch {
-      setStatusText("Failed to create or poll export job.");
-    } finally {
-      setOutput("");
+    setFileSize(null);
+    if (downloadUrl) {
+      URL.revokeObjectURL(downloadUrl);
+      setDownloadUrl(null);
     }
   };
 
-  const canDownload = Boolean(fileName && downloadUrl);
+  useEffect(() => {
+    return () => {
+      if (downloadUrl) URL.revokeObjectURL(downloadUrl);
+    };
+  }, []);
+
+  const exportJob = useMemo(() => {
+    if (!exportJobId) return null;
+    return jobs.find((j) => (j.jobId ?? (j as any).job_id) === exportJobId) ?? null;
+  }, [jobs, exportJobId]);
+
+  const exportStatus = (exportJob?.status ?? "").toLowerCase();
+
+  useEffect(() => {
+    if (!exportJobId) return;
+    if (!exportJob) return;
+
+    if (exportStatus === "failed") {
+      const msg = exportJob?.error?.message ?? exportJob?.error ?? "Unknown error";
+      setError(String(msg));
+      return;
+    }
+
+    if (exportStatus !== "done") return;
+
+    const r = ((exportJob.result as any)?.response ?? exportJob.result) as ExportJobResult | undefined;
+    if (!r?.fileName || !r?.dataBase64) {
+      setError("Export finished, but no file returned.");
+      return;
+    }
+
+    if (fileName === r.fileName && downloadUrl) return;
+
+    resetResult();
+
+    const blob = base64ToBlob(r.dataBase64, r.contentType || guessContentType(format));
+    const url = URL.createObjectURL(blob);
+
+    setFileName(r.fileName);
+    setFileSize(typeof r.sizeBytes === "number" ? r.sizeBytes : blob.size);
+    setDownloadUrl(url);
+  }, [exportJobId, exportJob, exportStatus]);
+
+  const canDownload = useMemo(() => Boolean(downloadUrl && fileName), [downloadUrl, fileName]);
+
+  const exportActive = exportStatus === "queued" || exportStatus === "running";
+  const runDisabled = loading || exportActive;
+
+  const runExport = async () => {
+    if (runDisabled) return;
+
+    setError("");
+    resetResult();
+
+    if (!sourceJobId.trim()) {
+      setError("Please select a source job from the sidebar or paste a Job ID.");
+      return;
+    }
+
+    setExportJobId(null);
+
+    const res = await fetch(`/api/jobs/${sourceJobId.trim()}`);
+
+    const jid = await run("export", {
+      source_job_id: sourceJobId.trim(),
+      format: format,
+      result: res.ok ? await res.json() : null,
+    });
+
+    if (!jid) {
+      setError("Failed to create export job.");
+      return;
+    }
+
+    setExportJobId(jid);
+    onJobQueued();
+  };
+
+  const statusLine = useMemo(() => {
+    if (error) return `Error: ${error}`;
+    if (exportActive) return `Export ${exportStatus}...`;
+    if (fileName) return `Ready: ${fileName}${typeof fileSize === "number" ? ` · ${formatBytes(fileSize)}` : ""}`;
+    if (exportJobId && exportStatus === "done") return "Export done.";
+    return "No export yet.";
+  }, [error, exportActive, exportStatus, fileName, fileSize, exportJobId]);
 
   return (
-    <ModuleCardSpec
-      title={title}
-      description={description}
-      footer={
-        <div className="flex items-center gap-3">
-          <div
-            className="flex-1 rounded-2xl border border-white/10 bg-gray-950/60 px-4 py-3 text-sm text-gray-200 shadow-inner backdrop-blur-xl"
-            aria-live="polite"
-          >
-            {statusText || "No export yet."}
-          </div>
-
-          <a
-            href={downloadUrl ?? "#"}
-            download={fileName ?? undefined}
-            aria-disabled={!canDownload}
-            onClick={(e) => {
-              if (!canDownload) e.preventDefault();
-            }}
-            className={`rounded-2xl px-4 py-3 text-sm font-medium transition
-              ${canDownload ? "bg-white/10 hover:bg-white/20" : "bg-white/5 opacity-50 cursor-not-allowed"}`}
-          >
-            Download
-          </a>
-        </div>
-      }
-    >
+    <ModuleCardSpec title={title} description={description}>
       <label className="mb-2 block text-sm font-medium text-gray-200" htmlFor="export-sourceJob">
         {sourceJobLabel ?? "Source Job ID"}
       </label>
@@ -135,11 +152,10 @@ export default function ExportModuleCard({
         id="export-sourceJob"
         value={sourceJobId}
         onChange={(e) => setSourceJobId(e.target.value)}
-        placeholder="Click a job in the sidebar or paste Job ID..."
-        className="mb-4 w-full rounded-2xl border border-white/10 bg-gray-950/60 px-4 py-3 text-sm text-gray-100 outline-none placeholder:text-gray-400 focus:border-purple-400"
+        disabled={runDisabled}
+        className="mb-4 w-full rounded-2xl border border-white/10 bg-gray-950/60 px-4 py-3 text-sm text-gray-100 outline-none placeholder:text-gray-400 focus:border-purple-400 disabled:opacity-60"
       />
 
-      
       <label className="mb-2 block text-sm font-medium text-gray-200" htmlFor="export-format">
         Format
       </label>
@@ -147,22 +163,67 @@ export default function ExportModuleCard({
         id="export-format"
         value={format}
         onChange={(e) => setFormat(e.target.value as ExportFormat)}
-        className="mb-4 w-full rounded-2xl border border-white/10 bg-gray-950/60 px-4 py-3 text-sm text-gray-100 outline-none focus:border-purple-400"
+        disabled={runDisabled}
+        className="mb-4 w-full rounded-2xl border border-white/10 bg-gray-950/60 px-4 py-3 text-sm text-gray-100 outline-none focus:border-purple-400 disabled:opacity-60"
       >
         <option value=".json">.json</option>
         <option value=".txt">.txt</option>
+        <option value=".owl">.owl</option>
       </select>
 
       <button
         type="button"
         onClick={runExport}
-        disabled={loading}
+        disabled={runDisabled}
         className="w-full rounded-2xl bg-white/10 px-6 py-3 text-lg font-medium tracking-wide transition hover:bg-white/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-2 focus-visible:ring-offset-gray-950 disabled:opacity-60"
       >
-        {loading ? "Running..." : "Run"}
+        {loading ? "Queuing..." : exportActive ? "Running..." : "Run"}
       </button>
 
-      {loading && jobId && <p className="mt-3 text-xs text-gray-400">Job ID: {jobId}</p>}
+      {exportJobId && (
+        <p className="mt-3 text-xs text-gray-400">
+          Export Job ID: {exportJobId}
+        </p>
+      )}
+
+      <div className="mt-6 flex items-center gap-3">
+        <div className="flex-1 rounded-2xl border border-white/10 bg-gray-950/60 px-4 py-3 text-sm text-gray-200 shadow-inner backdrop-blur-xl">
+          {statusLine}
+        </div>
+
+        <a
+          href={downloadUrl ?? "#"}
+          download={fileName ?? undefined}
+          onClick={(e) => {
+            if (!canDownload) e.preventDefault();
+          }}
+          className={`rounded-2xl px-4 py-3 text-sm font-medium transition ${canDownload ? "bg-white/10 hover:bg-white/20" : "bg-white/5 opacity-50 cursor-not-allowed"
+            }`}
+        >
+          Download
+        </a>
+      </div>
     </ModuleCardSpec>
   );
+}
+
+function guessContentType(format: ExportFormat) {
+  if (format === ".json") return "application/json";
+  if (format === ".owl") return "application/rdf+xml";
+  return "text/plain; charset=utf-8";
+}
+
+function base64ToBlob(b64: string, contentType: string) {
+  const binary = atob(b64);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+  return new Blob([bytes], { type: contentType });
+}
+
+function formatBytes(bytes: number) {
+  if (bytes < 1024) return `${bytes} B`;
+  const kb = bytes / 1024;
+  if (kb < 1024) return `${kb.toFixed(1)} KB`;
+  const mb = kb / 1024;
+  return `${mb.toFixed(1)} MB`;
 }

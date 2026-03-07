@@ -1,12 +1,20 @@
+export type JobStatus = "queued" | "running" | "done" | "failed" | string;
+
 export type Job = {
-    job_id: string;
-    status: "queued" | "running" | "done" | "failed" | string;
+    jobId: string;
+    status: JobStatus;
     module?: string | null;
-    created_at?: string | null;
-    started_at?: string | null;
-    finished_at?: string | null;
+
+    createdAt?: string | null;
+    startedAt?: string | null;
+
+    finishedAt?: string | null;
+
+    result?: any;
+    error?: any;
 };
 
+/*
 export type JobUI = {
     jobId: string;
     status: string;
@@ -15,3 +23,12 @@ export type JobUI = {
     updatedAt?: string;
 };
 
+
+export type JobResponse = {
+    jobId?: string;
+    status?: JobStatus;
+    module?: string;
+    result?: any;
+    error?: any;
+}
+*/
