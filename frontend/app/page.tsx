@@ -89,6 +89,10 @@ export default function Home() {
     void reloadJobs();
   }, [reloadJobs]);
 
+  useEffect(() => {
+    void reloadJobs();
+  }, [reloadJobs]);
+
   return (
     <main
       className="min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950 text-white"
