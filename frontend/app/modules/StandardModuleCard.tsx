@@ -30,7 +30,7 @@ export default function StandardModuleCard({ title, module, description, onJobQu
   const runModule = async () => {
     if (loading) return;
 
-    run(module, { message });
+    await run(module, { message });
     onJobQueued?.();
   };
 
