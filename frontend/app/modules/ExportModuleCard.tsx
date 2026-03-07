@@ -14,7 +14,7 @@ type ExportModuleCardProps = {
   onJobQueued: () => void;
 };
 
-type ExportFormat = ".json" | ".txt";
+type ExportFormat = ".json" | ".txt" | ".owl";
 
 type ExportJobResult = {
   fileName: string;
@@ -169,6 +169,7 @@ export default function ExportModuleCard({
       >
         <option value=".json">.json</option>
         <option value=".txt">.txt</option>
+        <option value=".owl">.owl</option>
       </select>
 
       <button
