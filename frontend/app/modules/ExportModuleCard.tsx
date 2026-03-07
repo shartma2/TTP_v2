@@ -41,7 +41,7 @@ export default function ExportModuleCard({
   const [fileSize, setFileSize] = useState<number | null>(null);
   const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
 
-  const { loading, run} = useJobRunner();
+  const { loading, run } = useJobRunner();
 
   useEffect(() => {
     setSourceJobId(selectedJobId ?? "");
@@ -83,7 +83,6 @@ export default function ExportModuleCard({
     if (exportStatus !== "done") return;
 
     const r = ((exportJob.result as any)?.response ?? exportJob.result) as ExportJobResult | undefined;
-    console.log(r)
     if (!r?.fileName || !r?.dataBase64) {
       setError("Export finished, but no file returned.");
       return;
@@ -209,7 +208,9 @@ export default function ExportModuleCard({
 }
 
 function guessContentType(format: ExportFormat) {
-  return format === ".json" ? "application/json" : "text/plain; charset=utf-8";
+  if (format === ".json") return "application/json";
+  if (format === ".owl") return "application/rdf+xml";
+  return "text/plain; charset=utf-8";
 }
 
 function base64ToBlob(b64: string, contentType: string) {
