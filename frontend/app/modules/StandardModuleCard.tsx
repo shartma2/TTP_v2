@@ -13,10 +13,7 @@ type StandardModuleCardProps = {
 
 export default function StandardModuleCard({ title, module, description, onJobQueued }: StandardModuleCardProps) {
   const [message, setMessage] = useState<string>("");
-  const [statusText, setStatusText] = useState<string>("");
-
   const { loading, jobId, run } = useJobRunner();
-
   const inputRef = useRef<HTMLTextAreaElement | null>(null);
 
   const resizeInput = () => {
