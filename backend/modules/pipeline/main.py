@@ -1,21 +1,18 @@
 from langchain_openai import ChatOpenAI
 import os
 from typing import Any
+
 from app.utils.logging import get_logger
 from app.utils.logging import save_artifact
 from app.utils.exceptions import MissingMessageException
 from app.utils.exceptions import InvalidPASSModelException
 from modules.pipeline.stages.generate.main import run as generate
 from modules.pipeline.stages.validate.main import run as validate
-
+from modules.pipeline.stages.repair.main import run as repair
 from .schemes._output import PASSModel
 
 api_key=os.environ.get("API_KEY")
-
-
-
 logger = get_logger("modules.pipeline.main")
-
 
 def run(payload: dict[str, Any]) -> dict[str, Any]:
     job_id = payload.get("job_id", "N/A")
@@ -40,16 +37,12 @@ def run(payload: dict[str, Any]) -> dict[str, Any]:
         save_artifact(input= payload.get("message"), output= response, job_id = job_id, prefix="gen")
         logger.info("Saved minimal run artifact", extra={"job_id": job_id})
 
-        if(not isinstance(response, PASSModel)):
-            raise InvalidPASSModelException("Generated output is not a PASSModel.")
-
-        issues = validate(response)
+        response = check_pass_model(response)
+        issues = validate_and_log(response, job_id)
         if issues:
-            save_artifact(output=issues, job_id=job_id, prefix="val")
-            logger.warning("Validation completed. Issues were found and saved to artifact", extra={"job_id":job_id})
-
-        else: 
-            logger.info("Validation completed. No issues found.", extra={"job_id":job_id})
+            response = repair(response, issues, model)
+            response = check_pass_model(response)
+            validate_and_log(response, job_id)
 
         return {"response": response}
 
@@ -63,3 +56,23 @@ def run(payload: dict[str, Any]) -> dict[str, Any]:
         logger.exception("Error occurred in Pipeline module", extra={"job_id": job_id})
         raise
     
+def check_pass_model(response: object) -> PASSModel:
+    if(not isinstance(response, PASSModel)):
+        raise InvalidPASSModelException("Generated output is not a PASSModel.")
+    return response
+
+def validate_and_log(response: PASSModel, job_id: str) -> list:
+    issues = validate(response)
+    if issues:
+        save_artifact(output=issues, job_id=job_id, prefix="val")
+        logger.warning(
+            "Validation completed. Issues were found and saved to artifact",
+            extra={"job_id": job_id},
+        )
+    else:
+        logger.info(
+            "Validation completed. No issues found.",
+            extra={"job_id": job_id},
+        )
+
+    return issues
