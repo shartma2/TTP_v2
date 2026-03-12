@@ -1,9 +1,6 @@
 from langchain.agents import create_agent
-#from langchain.openai import ChatOpenAI
-from typing import Any
-import json
 
-from modules.pipeline.schemes._prompt import SYSTEM_INSTRUCTIONS
+from modules.pipeline.schemes._generationPrompt import SYSTEM_INSTRUCTIONS
 from modules.pipeline.schemes._output import PASSModel
 
 def run(message, model) -> PASSModel:
@@ -18,6 +15,6 @@ def run(message, model) -> PASSModel:
             {"role": "system", "content": SYSTEM_INSTRUCTIONS},
             {"role": "user", "content": message},
             ]}
-        )
+        ).get("structured_response")
 
-    return response.get("structured_response")
+    return response
