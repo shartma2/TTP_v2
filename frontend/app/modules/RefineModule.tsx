@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useJobRunner } from "../util/jobRunner";
+import { shortenJobId } from "../util/shortenJobId";
 import ModuleCardSpec from "./ModuleCardSpec";
 
 type RefineModuleCardProps = {
@@ -68,9 +69,15 @@ export default function RefineModuleCard({
       title={title}
       description={description}
     >
-      <div className="mb-3 rounded-2xl border border-white/10 bg-gray-950/40 px-4 py-3 text-sm text-gray-300">
-        <span className="font-medium text-gray-200">Selected job:</span>{" "}
-        {sourceJobId || "None"}
+      <div className="mb-4 rounded-2xl border border-white/10 bg-gray-950/40 px-4 py-3 text-sm text-gray-300">
+        <span className="font-medium text-gray-200">Source Job ID:</span>{" "}
+        {sourceJobId ? (
+          <span title={sourceJobId} className="font-mono text-gray-100">
+            {shortenJobId(sourceJobId)}
+          </span>
+        ) : (
+          <span className="text-gray-400">None selected</span>
+        )}
       </div>
 
       <textarea

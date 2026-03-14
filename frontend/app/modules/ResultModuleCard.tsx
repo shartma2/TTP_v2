@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { renderResult } from "@/app//util/renderResult";
+import { shortenJobId } from "../util/shortenJobId";
 import ModuleCardSpec from "./ModuleCardSpec";
 
 type ResultDisplayCardProps = {
@@ -64,16 +65,16 @@ export default function ResultDisplayCard({ title, description, selectedJobId }:
         </div>
       }
     >
-      <label className="mb-2 block text-sm font-medium text-gray-200" htmlFor="result-jobid">
-        Job ID
-      </label>
-      <input
-        id="result-jobid"
-        value={jobId}
-        onChange={(e) => setJobId(e.target.value)}
-        placeholder="Click a job in the sidebar or paste Job ID..."
-        className="mb-4 w-full rounded-2xl border border-white/10 bg-gray-950/60 px-4 py-3 text-sm text-gray-100 outline-none placeholder:text-gray-400 focus:border-purple-400"
-      />
+      <div className="mb-4 rounded-2xl border border-white/10 bg-gray-950/40 px-4 py-3 text-sm text-gray-300">
+        <span className="font-medium text-gray-200">Source Job ID:</span>{" "}
+        {jobId ? (
+          <span title={jobId} className="font-mono text-gray-100">
+            {shortenJobId(jobId)}
+          </span>
+        ) : (
+          <span className="text-gray-400">None selected</span>
+        )}
+      </div>
 
       <button
         type="button"

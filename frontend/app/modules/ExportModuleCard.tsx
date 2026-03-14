@@ -3,7 +3,9 @@
 import { useEffect, useMemo, useState } from "react";
 import ModuleCardSpec from "./ModuleCardSpec";
 import { useJobRunner } from "../util/jobRunner";
+import { shortenJobId } from "../util/shortenJobId";
 import type { Job, ExportJobResult, ExportFormat } from "@/app/types";
+
 
 type ExportModuleCardProps = {
   title?: string;
@@ -131,16 +133,16 @@ export default function ExportModuleCard({
 
   return (
     <ModuleCardSpec title={title} description={description}>
-      <label className="mb-2 block text-sm font-medium text-gray-200" htmlFor="export-sourceJob">
-        {"Source Job ID"}
-      </label>
-      <input
-        id="export-sourceJob"
-        value={sourceJobId}
-        onChange={(e) => setSourceJobId(e.target.value)}
-        disabled={runDisabled}
-        className="mb-4 w-full rounded-2xl border border-white/10 bg-gray-950/60 px-4 py-3 text-sm text-gray-100 outline-none placeholder:text-gray-400 focus:border-purple-400 disabled:opacity-60"
-      />
+      <div className="mb-4 rounded-2xl border border-white/10 bg-gray-950/40 px-4 py-3 text-sm text-gray-300">
+        <span className="font-medium text-gray-200">Source Job ID:</span>{" "}
+        {sourceJobId ? (
+          <span title={sourceJobId} className="font-mono text-gray-100">
+            {shortenJobId(sourceJobId)}
+          </span>
+        ) : (
+          <span className="text-gray-400">None selected</span>
+        )}
+      </div>
 
       <label className="mb-2 block text-sm font-medium text-gray-200" htmlFor="export-format">
         Format
