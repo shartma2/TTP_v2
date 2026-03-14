@@ -9,7 +9,6 @@ from fastapi.middleware.cors import CORSMiddleware
 from api.router import api_router
 from app.services.job_service import JobService
 from app.utils.logging import configure_logging
-
 from app.utils.logging import get_logger
 
 
