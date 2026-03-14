@@ -42,7 +42,9 @@ def run(payload: dict[str, Any]) -> dict[str, Any]:
         if issues:
             response = repair(response, issues, model)
             response = check_pass_model(response)
-            validate_and_log(response, job_id)
+            issues = validate_and_log(response, job_id)
+            if issues:
+                logger.warning("Validation issues remain after repair attempt.", extra={"job_id": job_id})
 
         return {"response": response}
 
