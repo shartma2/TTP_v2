@@ -7,8 +7,11 @@ class JobError(Exception):
         super().__init__(message)
         self.message = message
 
-class MissingMessageException(JobError):
-    """Raised if the Input is missing."""
+class MissingParameterException(JobError):
+    """Raised if a Input Parameter is missing."""
+    def __init__(self, parameter: str):
+        self.parameter = parameter
+        super().__init__(f"Missing required parameter: '{parameter}'")
 
 class ModelValidationException(JobError):
     """Raised if a model validation fails"""

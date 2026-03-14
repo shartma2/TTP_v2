@@ -7,34 +7,43 @@ from rdflib.namespace import RDF, RDFS, OWL, XSD
 from textwrap import dedent
 
 from app.utils.logging import get_logger
-from app.utils.exceptions import InvalidExportFormatException, JobNotFoundException
+from app.utils.exceptions import InvalidExportFormatException, JobNotFoundException, MissingParameterException
 from modules.pipeline.schemes._output import PASSModel
 
 logger = get_logger("modules.export.main")
 
 def run(payload: dict[str, Any]) -> dict[str, Any]:
     
-    job_id = payload.get("job_id", "N/A")
-    source_job_id = payload.get("source_job_id", "N/A")
+    job_id = payload.get("job_id", None)
+    source_job_id = payload.get("source_job_id", None)
+    source_job_content = payload.get("result", None)
     format = payload.get("format", None)
-    job = payload.get("result", None)
-
-    if(not job):
-        logger.error("Job not found", extra={"source_job_id": source_job_id})
-        raise JobNotFoundException(f"Job not found: {source_job_id}")
 
 
-    module = job.get("module", "N/A")
-    status = job.get("status", "N/A")
+    if not job_id:
+        logger.warning("No job_id provided in payload.", extra={"job_id": job_id})
+        raise MissingParameterException("job_id")
+    
+    if not source_job_id:
+        logger.warning("No source_job_id provided in payload.", extra={"job_id": job_id})
+        raise MissingParameterException("source_job_id")       
+
+    if not source_job_content:
+        logger.warning("No source_job_content provided in payload.", extra={"job_id": job_id})
+        raise MissingParameterException("source_job_content")
+    
+    if not format:
+        logger.warning("No format provided in payload.", extra={"job_id": job_id})
+        raise MissingParameterException("format")      
+
+    module = source_job_content.get("module", "N/A")
+    status = source_job_content.get("status", "N/A")
 
     if status != "done":
         logger.error("Job is not ready for export", extra={"job_id": job_id},)
         raise JobNotFoundException(f"Job is not ready for export: {source_job_id}")
 
-    result = job.get("result", {}).get("response")
-
-
-
+    result = source_job_content.get("result", {}).get("response")
     logger.info("Running Export module", extra={"job_id": job_id, "format": format})
 
     match (module, format):
