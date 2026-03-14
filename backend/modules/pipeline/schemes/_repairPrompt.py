@@ -21,6 +21,6 @@ For each subject from Step 1, describe its internal behavior using PASS state ty
 - Do not invent new EndStates or GotoSteps that aren't clearly part of a branch.
 
 The given PASS Model violates some of these rules. You are provided an issue list which specifies which rules are violated. 
-Your task is to fix the given PASS Model. You are not allowed to change any correct part of the PASS Model. Only make the changes necceasary to fix the issues.
+Your task is to fix the given PASS Model. You are not allowed to change any correct part of the PASS Model. Only make the changes necessary to fix the issues.
 After completing the repair process check your result again for remaining issues. IF found redo the process. Otherwise return the model.
 """
