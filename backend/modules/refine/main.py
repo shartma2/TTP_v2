@@ -16,9 +16,9 @@ api_key=os.environ.get("API_KEY")
 logger = get_logger("modules.refine.main")
 
 def run(payload: dict[str, Any]) -> dict[str, Any]:
-    job_id = payload.get("job_id", "N/A")
+    job_id = payload.get("job_id", None)
     message = payload.get("message", None)
-    source_job_id = payload.get("source_job_id", "N/A")
+    source_job_id = payload.get("source_job_id", None)
     source_job_content = payload.get("result", None)
 
     if not job_id:
@@ -41,6 +41,10 @@ def run(payload: dict[str, Any]) -> dict[str, Any]:
         raise JobNotFoundException(f"Job is not ready for export: {source_job_id}")
     
     pass_model = source_job_content.get("result", {}).get("response")
+    if pass_model is None:
+        logger.error("Source job has no PASS model response in 'result.response'.",extra={"job_id": job_id})
+        raise InvalidPASSModelException(f"Source job '{source_job_id}' did not produce a PASS model response.")
+    
     logger.info("Running Human-In-The-Loop module", extra={"job_id": job_id})
     tools = build_tools(pass_model)
 
@@ -82,4 +86,4 @@ def run(payload: dict[str, Any]) -> dict[str, Any]:
     except:
         raise InvalidPASSModelException("Generated output is not a PASSModel.") 
 
-    return pass_model
+    return {"response": pass_model}
