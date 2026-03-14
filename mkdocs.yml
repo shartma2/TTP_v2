@@ -20,6 +20,7 @@ nav:
 
   - Backend:
       - Overview: backend/overview.md
+      - Application Entry Point: backend/main.md
       - API Routes: backend/api.md
       - App Layer:
           - Registry: backend/app/registry.md
