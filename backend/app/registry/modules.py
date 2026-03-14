@@ -15,5 +15,5 @@ MODULES: dict[str, ModuleFn] = {
     "cot": run_cot,
     "pipeline": run_pipeline,
     "export": run_export,
-    "refine" : run_refine,
+    "refine": run_refine,
 }
