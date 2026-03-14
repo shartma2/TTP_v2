@@ -140,6 +140,7 @@ export default function Home() {
                   title={m.title}
                   description={m.description}
                   selectedJobId={selectedJobId}
+                  onJobQueued={onJobQueued}
                 />
               );
             }

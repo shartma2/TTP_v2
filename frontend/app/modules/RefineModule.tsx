@@ -46,7 +46,7 @@ export default function RefineModuleCard({
     const sourceJob = res.ok ? await res.json() : null
 
     const jid = await run("refine", {
-      source_job_id: selectedJobId,
+      source_job_id: sourceJobId.trim(),
       message: message,
       result: sourceJob,
     });
