@@ -61,7 +61,6 @@ def _rename_subject(model_data: dict, old_name: str, new_name: str) -> dict:
 
     return changed
 
-
 def _rename_state(model_data: dict, subject_name: str, old_name: str, new_name: str) -> dict:
     changed = False
 
@@ -86,7 +85,6 @@ def _rename_state(model_data: dict, subject_name: str, old_name: str, new_name: 
 
     return changed
 
-
 def _rename_message(model_data: dict, old_name: str, new_name: str) -> dict:
     changed = False
 
@@ -104,7 +102,6 @@ def _rename_message(model_data: dict, old_name: str, new_name: str) -> dict:
                 changed = True
 
     return changed
-
 
 def _delete_subject(model_data: dict, subject_name: str) -> dict:
     changed = False

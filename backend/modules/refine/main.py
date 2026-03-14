@@ -1,21 +1,18 @@
 from langchain_openai import ChatOpenAI
 from langchain.agents import create_agent
 import os
-import pydantic
 from typing import Any
+
 from app.utils.logging import get_logger
 from app.utils.logging import save_artifact
 from app.utils.exceptions import MissingParameterException
 from app.utils.exceptions import JobNotFoundException
 from app.utils.exceptions import InvalidPASSModelException
-
 from modules.refine.schemes._generationPrompt import SYSTEM_INSTRUCTIONS
 from modules.refine.tools import build_tools
-
 from modules.pipeline.schemes._output import PASSModel
 
 api_key=os.environ.get("API_KEY")
-
 logger = get_logger("modules.refine.main")
 
 def run(payload: dict[str, Any]) -> dict[str, Any]:
@@ -44,10 +41,7 @@ def run(payload: dict[str, Any]) -> dict[str, Any]:
         raise JobNotFoundException(f"Job is not ready for export: {source_job_id}")
     
     pass_model = source_job_content.get("result", {}).get("response")
-
     logger.info("Running Human-In-The-Loop module", extra={"job_id": job_id})
-
-
     tools = build_tools(pass_model)
 
     model = ChatOpenAI(
@@ -80,7 +74,7 @@ def run(payload: dict[str, Any]) -> dict[str, Any]:
             ]
         }
     )
-
+    logger.info("Received response from Langchain Agent.", extra={"job_id": job_id})
     save_artifact(raw_response, job_id=job_id, prefix="ref")
 
     try:

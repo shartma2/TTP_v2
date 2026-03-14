@@ -34,10 +34,9 @@ def run(payload: dict[str, Any]) -> dict[str, Any]:
     )
     
     response = generate(message, model)
+    
     logger.info("Received response from Langchain Agent.", extra={"job_id": job_id})
-
     save_artifact(input= payload.get("message"), output= response, job_id = job_id, prefix="gen")
-    logger.info("Saved minimal run artifact", extra={"job_id": job_id})
 
     response = check_pass_model(response)
     issues = validate_and_log(response, job_id)
