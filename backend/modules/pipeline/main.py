@@ -7,7 +7,7 @@ from app.utils.logging import save_artifact
 from app.utils.exceptions import MissingMessageException
 from app.utils.exceptions import InvalidPASSModelException
 from modules.pipeline.stages.generate.main import run as generate
-from modules.pipeline.stages.validate.main import run as validate
+from modules.pipeline.stages.validate.main import run as validate, Issue
 from modules.pipeline.stages.repair.main import run as repair
 from .schemes._output import PASSModel
 
@@ -61,7 +61,7 @@ def check_pass_model(response: object) -> PASSModel:
         raise InvalidPASSModelException("Generated output is not a PASSModel.")
     return response
 
-def validate_and_log(response: PASSModel, job_id: str) -> list:
+def validate_and_log(response: PASSModel, job_id: str) -> list[Issue]:
     issues = validate(response)
     if issues:
         save_artifact(output=issues, job_id=job_id, prefix="val")
