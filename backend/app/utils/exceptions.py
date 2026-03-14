@@ -8,7 +8,7 @@ class JobError(Exception):
         self.message = message
 
 class MissingParameterException(JobError):
-    """Raised if a Input Parameter is missing."""
+    """Raised if an Input Parameter is missing."""
     def __init__(self, parameter: str):
         self.parameter = parameter
         super().__init__(f"Missing required parameter: '{parameter}'")
