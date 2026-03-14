@@ -83,9 +83,9 @@ def run(payload: dict[str, Any]) -> dict[str, Any]:
 
     save_artifact(raw_response, job_id=job_id, prefix="ref")
 
-    check_pass_model(pass_model)
-    return pass_model
+    try:
+        PASSModel.model_validate(pass_model)
+    except:
+        raise InvalidPASSModelException("Generated output is not a PASSModel.") 
 
-def check_pass_model(response: object) -> PASSModel:
-    if(not isinstance(response, PASSModel)):
-        raise InvalidPASSModelException("Generated output is not a PASSModel.")
+    return pass_model
