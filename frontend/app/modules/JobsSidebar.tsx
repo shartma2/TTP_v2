@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo } from "react";
 import type { Job } from "@/app/types";
-import { useJobRunner } from "./useJobRunner";
+import { useJobRunner } from "../util/jobRunner";
 
 
 export default function JobsSidebar({

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { useJobRunner } from "./useJobRunner";
+import { useJobRunner } from "../util/jobRunner";
 import ModuleCardSpec from "./ModuleCardSpec";
 
 type StandardModuleCardProps = {
@@ -12,8 +12,8 @@ type StandardModuleCardProps = {
 };
 
 export default function StandardModuleCard({ title, module, description, onJobQueued }: StandardModuleCardProps) {
-  const [message, setMessage] = useState<string>("");
   const { loading, jobId, run } = useJobRunner();
+  const [message, setMessage] = useState<string>("");
   const inputRef = useRef<HTMLTextAreaElement | null>(null);
 
   const resizeInput = () => {

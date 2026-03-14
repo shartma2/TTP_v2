@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { useJobRunner } from "./useJobRunner";
+import { useJobRunner } from "../util/jobRunner";
 import ModuleCardSpec from "./ModuleCardSpec";
 
 type RefineModuleCardProps = {
@@ -17,8 +17,8 @@ export default function RefineModuleCard({
   selectedJobId,
   onJobQueued
 }: RefineModuleCardProps) {
-  const [message, setMessage] = useState<string>("");
   const { loading, jobId, run } = useJobRunner();
+  const [message, setMessage] = useState<string>("");
   const [sourceJobId, setSourceJobId] = useState<string>(selectedJobId ?? "")
   const inputRef = useRef<HTMLTextAreaElement | null>(null);
 

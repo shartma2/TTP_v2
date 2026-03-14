@@ -2,46 +2,33 @@
 
 import { useEffect, useMemo, useState } from "react";
 import ModuleCardSpec from "./ModuleCardSpec";
-import { useJobRunner } from "./useJobRunner";
-import type { Job } from "@/app/types";
+import { useJobRunner } from "../util/jobRunner";
+import type { Job, ExportJobResult, ExportFormat } from "@/app/types";
 
 type ExportModuleCardProps = {
   title?: string;
   description?: string;
   selectedJobId: string | null;
-  sourceJobLabel?: string;
   jobs: Job[];
   onJobQueued: () => void;
-};
-
-type ExportFormat = ".json" | ".txt" | ".owl";
-
-type ExportJobResult = {
-  fileName: string;
-  contentType: string;
-  sizeBytes: number;
-  dataBase64: string;
 };
 
 export default function ExportModuleCard({
   title = "Export",
   description = "Export a finished job to a file.",
   selectedJobId,
-  sourceJobLabel,
   jobs,
   onJobQueued,
 }: ExportModuleCardProps) {
+  const { loading, run } = useJobRunner();
   const [sourceJobId, setSourceJobId] = useState<string>(selectedJobId ?? "");
   const [format, setFormat] = useState<ExportFormat>(".json");
-
   const [exportJobId, setExportJobId] = useState<string | null>(null);
-
   const [error, setError] = useState<string>("");
   const [fileName, setFileName] = useState<string | null>(null);
   const [fileSize, setFileSize] = useState<number | null>(null);
   const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
 
-  const { loading, run } = useJobRunner();
 
   useEffect(() => {
     setSourceJobId(selectedJobId ?? "");
@@ -101,11 +88,10 @@ export default function ExportModuleCard({
   }, [exportJobId, exportJob, exportStatus]);
 
   const canDownload = useMemo(() => Boolean(downloadUrl && fileName), [downloadUrl, fileName]);
-
   const exportActive = exportStatus === "queued" || exportStatus === "running";
   const runDisabled = loading || exportActive;
 
-  const runExport = async () => {
+  const runModule = async () => {
     if (runDisabled) return;
 
     setError("");
@@ -146,7 +132,7 @@ export default function ExportModuleCard({
   return (
     <ModuleCardSpec title={title} description={description}>
       <label className="mb-2 block text-sm font-medium text-gray-200" htmlFor="export-sourceJob">
-        {sourceJobLabel ?? "Source Job ID"}
+        {"Source Job ID"}
       </label>
       <input
         id="export-sourceJob"
@@ -173,7 +159,7 @@ export default function ExportModuleCard({
 
       <button
         type="button"
-        onClick={runExport}
+        onClick={runModule}
         disabled={runDisabled}
         className="w-full rounded-2xl bg-white/10 px-6 py-3 text-lg font-medium tracking-wide transition hover:bg-white/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-2 focus-visible:ring-offset-gray-950 disabled:opacity-60"
       >
