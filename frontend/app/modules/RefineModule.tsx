@@ -85,7 +85,7 @@ export default function RefineModuleCard({
         value={message}
         onChange={(e) => setMessage(e.target.value)}
         onInput={resizeInput}
-        placeholder="Type your refinement instructons..."
+        placeholder="Type your refinement instructions..."
         rows={1}
         className="mb-4 w-full resize-none overflow-hidden rounded-2xl border border-white/10 bg-gray-950/60 px-4 py-3 text-sm text-gray-100 outline-none placeholder:text-gray-400 focus:border-purple-400"
       />
