@@ -1,7 +1,6 @@
 # Ignore environment configuration files
-!config/.gitkeep
-config/backend.env
-config/frontend.env
+*.env
+!*.env.example
 
 # Ignore node modules and build files
 frontend/.next/
