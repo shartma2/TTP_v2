@@ -27,10 +27,10 @@ def run(payload: dict[str, Any]) -> dict[str, Any]:
         raise MissingParameterException("message")
 
     model = ChatOpenAI(
-    model = payload.get("model", "gpt-5.2"),
-    api_key = payload.get("api_key", api_key),
-    base_url = payload.get("base_url", None),
-    temperature = payload.get("temperature", 1),
+        model = payload.get("model", "gpt-5.2"),
+        api_key = payload.get("api_key", api_key),
+        base_url = payload.get("base_url", None),
+        temperature = payload.get("temperature", 1),
     )
     
     response = generate(message, model)
