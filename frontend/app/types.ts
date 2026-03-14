@@ -14,6 +14,15 @@ export type Job = {
     error?: any;
 };
 
+export type ExportJobResult = {
+  fileName: string;
+  contentType: string;
+  sizeBytes: number;
+  dataBase64: string;
+};
+
+export type ExportFormat = ".json" | ".txt" | ".owl";
+
 /*
 export type JobUI = {
     jobId: string;

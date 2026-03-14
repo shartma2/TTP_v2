@@ -2,19 +2,30 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useJobRunner } from "../util/jobRunner";
+import { shortenJobId } from "../util/shortenJobId";
 import ModuleCardSpec from "./ModuleCardSpec";
 
-type StandardModuleCardProps = {
+type RefineModuleCardProps = {
   title: string;
-  module: string;
   description?: string;
+  selectedJobId: string | null;
   onJobQueued?: () => void;
 };
 
-export default function StandardModuleCard({ title, module, description, onJobQueued }: StandardModuleCardProps) {
+export default function RefineModuleCard({
+  title = "Refinement",
+  description = "Refine a job.",
+  selectedJobId,
+  onJobQueued
+}: RefineModuleCardProps) {
   const { loading, jobId, run } = useJobRunner();
   const [message, setMessage] = useState<string>("");
+  const [sourceJobId, setSourceJobId] = useState<string>(selectedJobId ?? "")
   const inputRef = useRef<HTMLTextAreaElement | null>(null);
+
+  useEffect(() => {
+    setSourceJobId(selectedJobId ?? "");
+  }, [selectedJobId]);
 
   const resizeInput = () => {
     const el = inputRef.current;
@@ -27,7 +38,25 @@ export default function StandardModuleCard({ title, module, description, onJobQu
   const runModule = async () => {
     if (loading) return;
 
-    await run(module, { message });
+    if (!sourceJobId.trim()) {
+      //Set Error Message
+      return
+    }
+
+    const res = await fetch(`/api/jobs/${sourceJobId.trim()}`);
+    const sourceJob = res.ok ? await res.json() : null
+
+    const jid = await run("refine", {
+      source_job_id: sourceJobId.trim(),
+      message: message,
+      result: sourceJob,
+    });
+
+    if (!jid) {
+      //Set Error Message
+      return;
+    }
+
     onJobQueued?.();
   };
 
@@ -40,17 +69,23 @@ export default function StandardModuleCard({ title, module, description, onJobQu
       title={title}
       description={description}
     >
-      <label className="mb-3 block text-sm font-medium text-gray-200" htmlFor={`${module}-input`}>
-        Input
-      </label>
+      <div className="mb-4 rounded-2xl border border-white/10 bg-gray-950/40 px-4 py-3 text-sm text-gray-300">
+        <span className="font-medium text-gray-200">Source Job ID:</span>{" "}
+        {sourceJobId ? (
+          <span title={sourceJobId} className="font-mono text-gray-100">
+            {shortenJobId(sourceJobId)}
+          </span>
+        ) : (
+          <span className="text-gray-400">None selected</span>
+        )}
+      </div>
 
       <textarea
-        id={`${module}-input`}
         ref={inputRef}
         value={message}
         onChange={(e) => setMessage(e.target.value)}
         onInput={resizeInput}
-        placeholder="Type your message..."
+        placeholder="Type your refinement instructions..."
         rows={1}
         className="mb-4 w-full resize-none overflow-hidden rounded-2xl border border-white/10 bg-gray-950/60 px-4 py-3 text-sm text-gray-100 outline-none placeholder:text-gray-400 focus:border-purple-400"
       />

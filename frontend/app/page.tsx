@@ -6,12 +6,12 @@ import JobsSidebar from "./modules/JobsSidebar";
 
 import StandardModuleCard from "./modules/StandardModuleCard";
 import ResultDisplayCard from "./modules/ResultModuleCard";
-import LoopModuleCard from "./modules/LoopModuleCard"
+import RefineModuleCard from "./modules/RefineModule"
 import ExportModuleCard from "./modules/ExportModuleCard";
 
 type ModuleConfig =
   | { kind: "standard"; title: string; module: string; description?: string }
-  | { kind: "loop"; title: string; module: string; description?: string; sourceJobLabel?: string }
+  | { kind: "refine"; title: string; description?: string; sourceJobLabel?: string }
   | { kind: "export"; title: string; description?: string }
   | { kind: "display"; title: string; description?: string };
 
@@ -32,9 +32,8 @@ export default function Home() {
       description: "Execute a predefined pipeline of tasks.",
     },
     {
-      kind: "loop",
+      kind: "refine",
       title: "Human-In-The-Loop Features",
-      module: "hitl",
       description: "Execute refinement features."
     },
     {
@@ -134,15 +133,14 @@ export default function Home() {
                 />
               );
             }
-            if (m.kind === "loop") {
+            if (m.kind === "refine") {
               return (
-                <LoopModuleCard
-                  key={m.module}
+                <RefineModuleCard
+                  key={m.title}
                   title={m.title}
-                  module={m.module}
                   description={m.description}
-                  sourceJobLabel={m.sourceJobLabel}
                   selectedJobId={selectedJobId}
+                  onJobQueued={onJobQueued}
                 />
               );
             }
