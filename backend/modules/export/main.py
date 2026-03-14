@@ -52,12 +52,12 @@ def run(payload: dict[str, Any]) -> dict[str, Any]:
             contentType = "text/plain; charset=utf-8"
             raw_bytes = _to_txt_bytes(result)
 
-        case ("pipeline", ".json"):
+        case ("pipeline" | "refine", ".json"):
             fileName = "export.json"
             contentType = "application/json"
             raw_bytes = _to_json_bytes(result)
 
-        case ("pipeline", ".owl"):
+        case ("pipeline" | "refine", ".owl"):
             fileName = "export.owl"
             contentType = "application/rdf+xml"
             raw_bytes = _to_owl_bytes(result)
