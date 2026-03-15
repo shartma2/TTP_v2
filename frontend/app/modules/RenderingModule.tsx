@@ -73,7 +73,7 @@ export default function RenderingModuleCard({
 
         if (exportStatus !== "done") return;
 
-        const r = ((exportJob.result as any)?.response ?? exportJob.result) as RenderJobResult | undefined;
+        const r = (exportJob?.result) as RenderJobResult | undefined;
         if (!r?.fileName || !r?.dataBase64) {
             setError("Export finished, but no file returned.");
             return;

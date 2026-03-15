@@ -43,7 +43,7 @@ def run(payload: dict[str, Any]) -> dict[str, Any]:
         logger.error("Job is not ready for export", extra={"job_id": job_id},)
         raise JobNotFoundException(f"Job is not ready for export: {source_job_id}")
 
-    model = source_job_content.get("result", {}).get("response")
+    model = source_job_content.get("result", None)
     logger.info("Running Export module", extra={"job_id": job_id, "format": format})
 
     match (module, format):
@@ -73,7 +73,7 @@ def run(payload: dict[str, Any]) -> dict[str, Any]:
         "dataBase64": base64.b64encode(raw_bytes).decode("ascii"),
      }
     
-    return {"response": result}
+    return  result
 
 def _to_txt_bytes(data: str) -> bytes:
     if isinstance(data, str):

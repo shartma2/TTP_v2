@@ -42,7 +42,9 @@ def run(payload: dict[str, Any]) -> dict[str, Any]:
         #parsed = parse_cot(response.choices[0].message.content)
         #print("Parsed CoT Output::", parsed)
 
-        return {"response": response.choices[0].message.content}
+        result = response.choices[0].message.content
+
+        return result
 
     except Exception:
         logger.exception("Error occurred in CoT module", extra={"job_id": job_id})

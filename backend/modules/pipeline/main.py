@@ -47,7 +47,7 @@ def run(payload: dict[str, Any]) -> dict[str, Any]:
         if issues:
             logger.warning("Validation issues remain after repair attempt.", extra={"job_id": job_id})
 
-    return {"response": response}
+    return response
     
 def _check_pass_model(response: object) -> PASSModel:
     if(not isinstance(response, PASSModel)):
