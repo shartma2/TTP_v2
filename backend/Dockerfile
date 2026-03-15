@@ -6,8 +6,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends curl build-esse
     && curl -sSL https://install.python-poetry.org | python3 - \
     && ln -s /root/.local/bin/poetry /usr/local/bin/poetry
 
-RUN apt-get update && apt-get install -y graphviz
-
 # Set workdir
 WORKDIR /app
 
