@@ -37,12 +37,12 @@ def run(payload: dict[str, Any]) -> dict[str, Any]:
     status = source_job_content.get("status", "N/A")
 
     if status != "done":
-        logger.error("Job is not ready for export", extra={"job_id": job_id},)
-        raise JobNotFoundException(f"Job is not ready for export: {source_job_id}")
+        logger.error("Job is not ready for rendering", extra={"job_id": job_id},)
+        raise JobNotFoundException(f"Job is not ready for rendering: {source_job_id}")
 
     model = PASSModel.model_validate(source_job_content.get("result", None))
     
-    logger.info("Running Export module", extra={"job_id": job_id, "format": format})
+    logger.info("Running Rendering module", extra={"job_id": job_id})
     svg = _render_model_svg(model)
     pdf = _render_model_pdf(model)
     result = {
@@ -54,7 +54,7 @@ def run(payload: dict[str, Any]) -> dict[str, Any]:
     }
     return result
 
-def _render_graph_svg(dot: Digraph) -> str:
+def _render_graph_svg(dot: Digraph) -> bytes:
     return dot.pipe(format="svg")
 
 

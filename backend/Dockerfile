@@ -1,12 +1,10 @@
 FROM python:3.11-slim
 
 # Install system deps, Poetry
-RUN apt-get update && apt-get install -y --no-install-recommends curl build-essential \
+RUN apt-get update && apt-get install -y --no-install-recommends curl build-essential graphviz\
     && rm -rf /var/lib/apt/lists/* \
     && curl -sSL https://install.python-poetry.org | python3 - \
     && ln -s /root/.local/bin/poetry /usr/local/bin/poetry
-
-RUN apt-get update && apt-get install -y graphviz
 
 # Set workdir
 WORKDIR /app

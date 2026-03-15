@@ -4,7 +4,6 @@ import re
 from graphviz import Digraph
 
 from modules.pipeline.schemes._output import (
-    PASSModel,
     SID,
     SBD,
     State,

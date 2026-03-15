@@ -6,9 +6,9 @@ import JobsSidebar from "./modules/JobsSidebar";
 
 import StandardModuleCard from "./modules/StandardModuleCard";
 import ResultDisplayCard from "./modules/ResultModuleCard";
-import RefineModuleCard from "./modules/RefineModule"
+import RefineModuleCard from "./modules/RefineModuleCard"
 import ExportModuleCard from "./modules/ExportModuleCard";
-import RenderingModuleCard from "./modules/RenderingModule";
+import RenderingModuleCard from "./modules/RenderingModuleCard";
 
 type ModuleConfig =
   | { kind: "standard"; title: string; module: string; description?: string }

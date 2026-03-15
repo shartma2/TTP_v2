@@ -14,7 +14,7 @@ from .schemes._output import PASSModel
 api_key=os.environ.get("API_KEY")
 logger = get_logger("modules.pipeline.main")
 
-def run(payload: dict[str, Any]) -> dict[str, Any]:
+def run(payload: dict[str, Any]) -> PASSModel:
     job_id = payload.get("job_id", None)
     message = payload.get("message", None)
     logger.info("Running Pipeline module", extra={"job_id": job_id})

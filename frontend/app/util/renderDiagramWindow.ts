@@ -27,9 +27,9 @@ export function buildDiagramWindowHtml(svgData: DiagramSvgData): string {
 
   const sbdRaw =
     typeof svgData === "object" &&
-    svgData &&
-    "sbd" in svgData &&
-    Array.isArray(svgData.sbd)
+      svgData &&
+      "sbd" in svgData &&
+      Array.isArray(svgData.sbd)
       ? svgData.sbd
       : [];
 
@@ -124,9 +124,8 @@ export function buildDiagramWindowHtml(svgData: DiagramSvgData): string {
   <body>
     <h1>PASS Diagrams</h1>
 
-    ${
-      sidSvg
-        ? `
+    ${sidSvg
+      ? `
       <div class="section">
         <h2>SID</h2>
         <div class="toolbar">
@@ -141,7 +140,7 @@ export function buildDiagramWindowHtml(svgData: DiagramSvgData): string {
         <div class="hint">Mouse wheel to zoom. Drag to move. Fit restores the full diagram view.</div>
       </div>
     `
-        : ""
+      : ""
     }
 
     ${sbdEntries
@@ -325,5 +324,16 @@ export function openDiagramWindow(svgData: DiagramSvgData) {
   const html = buildDiagramWindowHtml(svgData);
   const pageBlob = new Blob([html], { type: "text/html;charset=utf-8" });
   const pageUrl = URL.createObjectURL(pageBlob);
-  window.open(pageUrl, "_blank", "noopener,noreferrer");
+  const newWindow = window.open(pageUrl, "_blank", "noopener,noreferrer");
+  if (newWindow) {
+    newWindow.addEventListener(
+      "load",
+      () => {
+        URL.revokeObjectURL(pageUrl);
+      },
+      { once: true }
+    );
+  } else {
+    URL.revokeObjectURL(pageUrl);
+  }
 }

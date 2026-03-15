@@ -17,8 +17,8 @@ type RenderingModuleCardProps = {
 };
 
 export default function RenderingModuleCard({
-    title = "Export",
-    description = "Export a finished job to a file.",
+    title = "Rendering",
+    description = "Render a process model from a finished pipeline job.",
     selectedJobId,
     jobs,
     onJobQueued,
@@ -52,7 +52,7 @@ export default function RenderingModuleCard({
         return () => {
             if (downloadUrl) URL.revokeObjectURL(downloadUrl);
         };
-    }, []);
+    }, [downloadUrl]);
 
     const exportJob = useMemo(() => {
         if (!exportJobId) return null;
@@ -117,7 +117,7 @@ export default function RenderingModuleCard({
         });
 
         if (!jid) {
-            setError("Failed to create export job.");
+            setError("Failed to create rendering job.");
             return;
         }
 
@@ -129,8 +129,8 @@ export default function RenderingModuleCard({
         if (error) return `Error: ${error}`;
         if (exportActive) return `Export ${exportStatus}...`;
         if (fileName) return `Ready: ${fileName}${typeof fileSize === "number" ? ` · ${formatBytes(fileSize)}` : ""}`;
-        if (exportJobId && exportStatus === "done") return "Export done.";
-        return "No export yet.";
+        if (exportJobId && exportStatus === "done") return "Rendering done.";
+        return "No render yet.";
     }, [error, exportActive, exportStatus, fileName, fileSize, exportJobId]);
 
     const showDiagram = () => {

@@ -5,20 +5,22 @@ import os
 from .prompt import SYSTEM_INSTRUCTIONS, PROMPT_TEMPLATE
 from .parsing import main as parse_cot
 
+from app.utils.exceptions import MissingParameterException
 from app.utils.logging import get_logger
+
 
 api_key=os.environ.get("API_KEY")
 
 logger = get_logger("modules.CoT.main")
 
-def run(payload: dict[str, Any]) -> dict[str, Any]:
+def run(payload: dict[str, Any]) -> str:
     job_id = payload.get("job_id", "N/A")
     logger.info("Running CoT module", extra={"job_id": job_id})
 
     try: 
         if "message" not in payload or not payload["message"]:
             logger.warning("No message provided in payload.", extra={"job_id": job_id})
-            return {"error": "No message provided in payload."}
+            raise MissingParameterException("message")
 
         model = payload["model"] if "model" in payload else "gpt-5"
         api_key = payload["api_key"] if "api_key" in payload else os.environ.get("API_KEY")
@@ -48,6 +50,6 @@ def run(payload: dict[str, Any]) -> dict[str, Any]:
 
     except Exception:
         logger.exception("Error occurred in CoT module", extra={"job_id": job_id})
-        return {"error": "An error occurred while processing the request."}
+        raise
 
 
