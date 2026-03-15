@@ -43,24 +43,24 @@ def run(payload: dict[str, Any]) -> dict[str, Any]:
         logger.error("Job is not ready for export", extra={"job_id": job_id},)
         raise JobNotFoundException(f"Job is not ready for export: {source_job_id}")
 
-    result = source_job_content.get("result", {}).get("response")
+    model = source_job_content.get("result", {}).get("response")
     logger.info("Running Export module", extra={"job_id": job_id, "format": format})
 
     match (module, format):
         case (_, ".txt"):
             fileName = "export.txt"
             contentType = "text/plain; charset=utf-8"
-            raw_bytes = _to_txt_bytes(result)
+            raw_bytes = _to_txt_bytes(model)
 
         case ("pipeline" | "refine", ".json"):
             fileName = "export.json"
             contentType = "application/json"
-            raw_bytes = _to_json_bytes(result)
+            raw_bytes = _to_json_bytes(model)
 
         case ("pipeline" | "refine", ".owl"):
             fileName = "export.owl"
             contentType = "application/rdf+xml"
-            raw_bytes = _to_owl_bytes(result)
+            raw_bytes = _to_owl_bytes(model)
         
         case (_, _):
             logger.error("Unsupported format", extra={"job_id": job_id, "format": format})
