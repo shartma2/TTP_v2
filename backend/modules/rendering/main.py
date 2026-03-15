@@ -43,8 +43,8 @@ def run(payload: dict[str, Any]) -> dict[str, Any]:
     model = PASSModel.model_validate(source_job_content.get("result", {}).get("response"))
     
     logger.info("Running Export module", extra={"job_id": job_id, "format": format})
-    svg = render_model_svg(model)
-    pdf = render_model_pdf(model)
+    svg = _render_model_svg(model)
+    pdf = _render_model_pdf(model)
     result = {
         "fileName": "export.pdf",
         "contentType": "application/pdf",
@@ -54,17 +54,17 @@ def run(payload: dict[str, Any]) -> dict[str, Any]:
     }
     return result
 
-def render_graph_svg(dot: Digraph) -> str:
+def _render_graph_svg(dot: Digraph) -> str:
     return dot.pipe(format="svg")
 
 
-def render_graph_pdf(dot: Digraph) -> bytes:
+def _render_graph_pdf(dot: Digraph) -> bytes:
     return dot.pipe(format="pdf")
 
-def render_model_svg(model: PASSModel) -> dict[str, Any]:
+def _render_model_svg(model: PASSModel) -> dict[str, Any]:
     sid_subjects = {subject.label for subject in model.sid.subjects}
 
-    sid_svg = render_graph_svg(build_sid_digraph(model.sid))
+    sid_svg = _render_graph_svg(build_sid_digraph(model.sid))
 
     sbd_svgs: list[dict[str, str]] = []
     for sbd in model.sbd:
@@ -73,7 +73,7 @@ def render_model_svg(model: PASSModel) -> dict[str, Any]:
 
         sbd_svgs.append({
             "subject": sbd.subject,
-            "svg": render_graph_svg(build_sbd_digraph(sbd)),
+            "svg": _render_graph_svg(build_sbd_digraph(sbd)),
         })
 
     return {
@@ -81,11 +81,11 @@ def render_model_svg(model: PASSModel) -> dict[str, Any]:
         "sbd": sbd_svgs,
     }
 
-def render_model_pdf(model: PASSModel) -> bytes:
+def _render_model_pdf(model: PASSModel) -> bytes:
     sid_subjects = {subject.label for subject in model.sid.subjects}
     writer = PdfWriter()
 
-    sid_pdf = render_graph_pdf(build_sid_digraph(model.sid))
+    sid_pdf = _render_graph_pdf(build_sid_digraph(model.sid))
     sid_reader = PdfReader(io.BytesIO(sid_pdf))
     for page in sid_reader.pages:
         writer.add_page(page)
@@ -94,7 +94,7 @@ def render_model_pdf(model: PASSModel) -> bytes:
         if sbd.subject not in sid_subjects:
             raise ValueError(f"SBD subject '{sbd.subject}' does not exist in SID subjects")
 
-        sbd_pdf = render_graph_pdf(build_sbd_digraph(sbd))
+        sbd_pdf = _render_graph_pdf(build_sbd_digraph(sbd))
         sbd_reader = PdfReader(io.BytesIO(sbd_pdf))
         for page in sbd_reader.pages:
             writer.add_page(page)
