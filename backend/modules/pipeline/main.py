@@ -38,23 +38,23 @@ def run(payload: dict[str, Any]) -> PASSModel:
     logger.info("Received response from Langchain Agent.", extra={"job_id": job_id})
     save_artifact(input= payload.get("message"), output= response, job_id = job_id, prefix="gen")
 
-    response = _check_pass_model(response)
-    issues = _validate_and_log(response, job_id)
+    response = check_pass_model(response)
+    issues = validate_and_log(response, job_id)
     if issues:
         response = repair(response, issues, model)
-        response = _check_pass_model(response)
-        issues = _validate_and_log(response, job_id)
+        response = check_pass_model(response)
+        issues = validate_and_log(response, job_id)
         if issues:
             logger.warning("Validation issues remain after repair attempt.", extra={"job_id": job_id})
 
-    return response
+    return {"response": response}
     
-def _check_pass_model(response: object) -> PASSModel:
+def check_pass_model(response: object) -> PASSModel:
     if(not isinstance(response, PASSModel)):
         raise InvalidPASSModelException("Generated output is not a PASSModel.")
     return response
 
-def _validate_and_log(response: PASSModel, job_id: str) -> list[Issue]:
+def validate_and_log(response: PASSModel, job_id: str) -> list[Issue]:
     issues = validate(response)
     if issues:
         save_artifact(output=issues, job_id=job_id, prefix="val")

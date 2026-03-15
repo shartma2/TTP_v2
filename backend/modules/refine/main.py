@@ -40,7 +40,7 @@ def run(payload: dict[str, Any]) -> PASSModel:
         logger.error("Job is not ready for export", extra={"job_id": job_id},)
         raise JobNotFoundException(f"Job is not ready for export: {source_job_id}")
     
-    pass_model = source_job_content.get("result", None)
+    pass_model = source_job_content.get("result", {}).get("response")
     if pass_model is None:
         logger.error("Source job has no PASS model response in 'result'.",extra={"job_id": job_id})
         raise InvalidPASSModelException(f"Source job '{source_job_id}' did not produce a PASS model response.")
@@ -86,4 +86,4 @@ def run(payload: dict[str, Any]) -> PASSModel:
     except:
         raise InvalidPASSModelException("Generated output is not a PASSModel.") 
 
-    return pass_model
+    return {"response": pass_model}
