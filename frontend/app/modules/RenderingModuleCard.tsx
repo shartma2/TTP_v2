@@ -52,7 +52,7 @@ export default function RenderingModuleCard({
         return () => {
             if (downloadUrl) URL.revokeObjectURL(downloadUrl);
         };
-    }, []);
+    }, [downloadUrl]);
 
     const exportJob = useMemo(() => {
         if (!exportJobId) return null;
