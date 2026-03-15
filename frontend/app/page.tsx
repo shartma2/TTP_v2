@@ -8,11 +8,13 @@ import StandardModuleCard from "./modules/StandardModuleCard";
 import ResultDisplayCard from "./modules/ResultModuleCard";
 import RefineModuleCard from "./modules/RefineModule"
 import ExportModuleCard from "./modules/ExportModuleCard";
+import RenderingModuleCard from "./modules/RenderingModule";
 
 type ModuleConfig =
   | { kind: "standard"; title: string; module: string; description?: string }
   | { kind: "refine"; title: string; description?: string; sourceJobLabel?: string }
   | { kind: "export"; title: string; description?: string }
+  | { kind: "rendering"; title: string; description?: string }
   | { kind: "display"; title: string; description?: string };
 
 const SIDEBAR_W = "clamp(280px,30vw,420px)";
@@ -40,6 +42,11 @@ export default function Home() {
       kind: "export",
       title: "Export",
       description: "Export a Job to a file"
+    },
+    {
+      kind: "rendering",
+      title: "Render",
+      description: "Render a Diagram"
     },
     {
       kind: "display",
@@ -147,6 +154,18 @@ export default function Home() {
             if (m.kind === "export") {
               return (
                 <ExportModuleCard
+                  key={m.title}
+                  title={m.title}
+                  description={m.description}
+                  selectedJobId={selectedJobId}
+                  jobs={jobs}
+                  onJobQueued={onJobQueued}
+                />
+              );
+            }
+            if (m.kind === "rendering") {
+              return (
+                <RenderingModuleCard
                   key={m.title}
                   title={m.title}
                   description={m.description}

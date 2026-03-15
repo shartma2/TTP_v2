@@ -23,6 +23,13 @@ export type ExportJobResult = {
 
 export type ExportFormat = ".json" | ".txt" | ".owl";
 
+export type RenderJobResult = {
+  fileName: string;
+  contentType: string;
+  sizeBytes: number;
+  dataBase64: string;
+  svg: string;
+};
 /*
 export type JobUI = {
     jobId: string;
