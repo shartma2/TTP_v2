@@ -15,7 +15,7 @@ from modules.pipeline.schemes._output import PASSModel
 api_key=os.environ.get("API_KEY")
 logger = get_logger("modules.refine.main")
 
-def run(payload: dict[str, Any]) -> dict[str, Any]:
+def run(payload: dict[str, Any]) -> PASSModel:
     job_id = payload.get("job_id", None)
     message = payload.get("message", None)
     source_job_id = payload.get("source_job_id", None)
@@ -42,7 +42,7 @@ def run(payload: dict[str, Any]) -> dict[str, Any]:
     
     pass_model = source_job_content.get("result", None)
     if pass_model is None:
-        logger.error("Source job has no PASS model response in 'result.response'.",extra={"job_id": job_id})
+        logger.error("Source job has no PASS model response in 'result'.",extra={"job_id": job_id})
         raise InvalidPASSModelException(f"Source job '{source_job_id}' did not produce a PASS model response.")
     
     logger.info("Running Human-In-The-Loop module", extra={"job_id": job_id})
