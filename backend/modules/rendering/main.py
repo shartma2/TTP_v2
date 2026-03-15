@@ -54,7 +54,7 @@ def run(payload: dict[str, Any]) -> dict[str, Any]:
     }
     return result
 
-def _render_graph_svg(dot: Digraph) -> str:
+def _render_graph_svg(dot: Digraph) -> bytes:
     return dot.pipe(format="svg")
 
 
