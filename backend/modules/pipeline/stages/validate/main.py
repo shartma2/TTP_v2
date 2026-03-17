@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import List, Optional, Set, Tuple, Dict
 
-from modules.pipeline.schemes._output import (PASSModel, TransitionType, StateTraits, StateType)
+from app.models.PASSModel import (PASSModel, TransitionType, StateTraits, StateType)
 
 def run(input: PASSModel) -> List[Issue]:
     issues: List[Issue] = []

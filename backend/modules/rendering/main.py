@@ -9,7 +9,7 @@ from typing import Any
 from app.utils.logging import get_logger
 from app.utils.exceptions import JobNotFoundException, MissingParameterException
 
-from modules.pipeline.schemes._output import PASSModel
+from app.models.PASSModel import PASSModel
 from modules.rendering.graphs import build_sbd_digraph, build_sid_digraph
 
 logger = get_logger("modules.rendering.main")

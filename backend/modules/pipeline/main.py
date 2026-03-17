@@ -9,7 +9,7 @@ from app.utils.exceptions import InvalidPASSModelException
 from modules.pipeline.stages.generate.main import run as generate
 from modules.pipeline.stages.validate.main import run as validate, Issue
 from modules.pipeline.stages.repair.main import run as repair
-from .schemes._output import PASSModel
+from app.models.PASSModel import PASSModel
 
 api_key=os.environ.get("API_KEY")
 logger = get_logger("modules.pipeline.main")

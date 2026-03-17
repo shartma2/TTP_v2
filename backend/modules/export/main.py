@@ -8,7 +8,7 @@ from textwrap import dedent
 
 from app.utils.logging import get_logger
 from app.utils.exceptions import InvalidExportFormatException, JobNotFoundException, MissingParameterException
-from modules.pipeline.schemes._output import PASSModel
+from app.models.PASSModel import PASSModel
 
 logger = get_logger("modules.export.main")
 
