@@ -3,7 +3,7 @@ from __future__ import annotations
 import re
 from graphviz import Digraph
 
-from modules.pipeline.schemes._output import (
+from app.models.PASSModel import (
     SID,
     SBD,
     State,

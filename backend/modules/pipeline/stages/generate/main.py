@@ -1,7 +1,7 @@
 from langchain.agents import create_agent
 
 from modules.pipeline.schemes._generationPrompt import SYSTEM_INSTRUCTIONS
-from modules.pipeline.schemes._output import PASSModel
+from app.models.PASSModel import PASSModel
 
 def run(message, model) -> PASSModel:
     agent = create_agent(

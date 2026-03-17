@@ -5,7 +5,7 @@ from dataclasses import asdict
 from typing import List, Optional
 import json
 
-from modules.pipeline.schemes._output import PASSModel
+from app.models.PASSModel import PASSModel
 from modules.pipeline.schemes._repairPrompt import SYSTEM_INSTRUCTIONS
 from modules.pipeline.stages.validate.main import Issue
 

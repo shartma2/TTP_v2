@@ -10,7 +10,7 @@ from app.utils.exceptions import JobNotFoundException
 from app.utils.exceptions import InvalidPASSModelException
 from modules.refine.schemes._generationPrompt import SYSTEM_INSTRUCTIONS
 from modules.refine.tools import build_tools
-from modules.pipeline.schemes._output import PASSModel
+from app.models.PASSModel import PASSModel
 
 api_key=os.environ.get("API_KEY")
 logger = get_logger("modules.refine.main")
