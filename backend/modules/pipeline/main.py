@@ -30,7 +30,7 @@ def run(payload: dict[str, Any]) -> PASSModel:
         model = payload.get("model", "gpt-5.2"),
         api_key = payload.get("api_key", api_key),
         base_url = payload.get("base_url", None),
-        temperature = payload.get("temperature", 1),
+        temperature = payload.get("temperature", 0.2),
     )
     
     response = generate(message, model)
