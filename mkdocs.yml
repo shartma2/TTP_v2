@@ -37,15 +37,15 @@ nav:
                   - Repair: backend/modules/pipeline/stages/repair.md
                   - Finalize: backend/modules/pipeline/stages/finalize.md
 
-  - Config:
-      - Overview: config/overview.md
-
   - Frontend:
       - Overview: frontend/overview.md
       - Routing & Layout: frontend/routing-layout.md
       - Modules: frontend/modules.md
       - Utilities:
           - Polling: frontend/util/polling.md
+
+  - Config:
+      - Overview: config/overview.md
 
 markdown_extensions:
   - admonition
