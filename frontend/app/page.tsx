@@ -17,7 +17,7 @@ type ModuleConfig =
   | { kind: "refine"; title: string; description?: string; sourceJobLabel?: string }
   | { kind: "export"; title: string; description?: string }
   | { kind: "rendering"; title: string; description?: string }
-  | { kind: "display"; title: string; description?: string };
+  | { kind: "result"; title: string; description?: string };
 
 const SIDEBAR_W = "clamp(280px,30vw,420px)";
 
@@ -25,51 +25,59 @@ export default function Home() {
   const modules: ModuleConfig[] = [
     {
       kind: "description",
-      title: "Tutorial Card",
+      title: "Tutorial Display",
       description: "This card gives a short Overview of this web-app.",
       steps: [
         {
-          name: "Step 1",
-          description: "This is step 1."
+          name: "Choose Processing Module",
+          description: "Select how your process description should be handled. The Pipeline module applies a structured, predefined sequence of transformations, while the Chain-of-Thought (CoT) module follows a step-by-step reasoning approach to incrementally build the model."
         },
         {
-          name: "Step 2",
-          description: "This is step 2."
+          name: "View the Result",
+          description: "After execution, inspect the generated output by selecting a done job from the job overview. You can view the raw structured result  using the Result Display or use the Rendering Module to generate a graphical representation of the model."
+        },
+        {
+          name: "Refine the Model",
+          description: "If adjustments are needed, use the Refinement module to modify the generated model. This allows you to iteratively improve structure and semantics by updating or extending the existing result based on additional input. Right now you can rename subjects, messages and states."
+        },
+        {
+          name: "Export the Result",
+          description: "Once satisfied, use the Export module to download the generated model. Multiple output formats are available, enabling further use or integration into other tools."
         },
       ],
     },
 
     {
       kind: "standard",
-      title: "Chain-of-Thought",
+      title: "Chain-of-Thought Module",
       module: "cot",
-      description: "Send a message to the CoT module.",
+      description: "Generate a PASS Model using Chain-of-Thought reasoning.",
     },
     {
       kind: "standard",
       title: "Pipeline Module",
       module: "pipeline",
-      description: "Execute a predefined pipeline of tasks.",
+      description: "Generate a PASS Model using a predefined pipeline of tasks.",
     },
     {
-      kind: "refine",
-      title: "Human-In-The-Loop Features",
-      description: "Execute refinement features."
-    },
-    {
-      kind: "export",
-      title: "Export",
-      description: "Export a Job to a file"
+      kind: "result",
+      title: "Result Display",
+      description: "Inspect the raw results of run jobs."
     },
     {
       kind: "rendering",
-      title: "Render",
-      description: "Render a Diagram"
+      title: "Rendering Module",
+      description: "Render a visual representation of the PASS model."
     },
     {
-      kind: "display",
-      title: "Result Display",
-      description: "Inspect the results of previously run jobs."
+      kind: "refine",
+      title: "Refinement Module",
+      description: "Execute predefined refinement features. Currently available: Rename Subject, Rename Message, Rename State"
+    },
+    {
+      kind: "export",
+      title: "Export Module",
+      description: "Export a Job to a choosen file format."
     },
   ];
 
@@ -149,12 +157,14 @@ export default function Home() {
           {modules.map((m) => {
             if (m.kind === "description") {
               return (
+                <div className="sm:col-span-2 lg:col-span-2">
                 <DescriptionCard
                   key={m.title}
                   title={m.title}
                   description={m.description}
                   steps={m.steps}
                 />
+                </div>
               );
             }
             if (m.kind === "standard") {
@@ -176,6 +186,16 @@ export default function Home() {
                   description={m.description}
                   selectedJobId={selectedJobId}
                   onJobQueued={onJobQueued}
+                />
+              );
+            }
+            if (m.kind === "result") {
+              return (
+                <ResultDisplayCard
+                  key={m.title}
+                  title={m.title}
+                  description={m.description}
+                  selectedJobId={selectedJobId}
                 />
               );
             }
@@ -203,14 +223,7 @@ export default function Home() {
                 />
               );
             }
-            return (
-              <ResultDisplayCard
-                key={m.title}
-                title={m.title}
-                description={m.description}
-                selectedJobId={selectedJobId}
-              />
-            );
+            return
           })}
         </div>
       </section>
