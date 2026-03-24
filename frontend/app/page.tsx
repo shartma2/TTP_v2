@@ -147,7 +147,7 @@ export default function Home() {
         />
       </aside>
 
-      {/* CONTENT */}
+      {/* Modules */}
       <section
         className="p-6 lg:ml-[var(--sidebar-w)]
                  lg:min-h-screen lg:border-l lg:border-white/10
