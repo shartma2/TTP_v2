@@ -1,9 +1,10 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import type { Job } from "@/app/types";
+import type { Job, TutorialStep } from "@/app/types";
 import JobsSidebar from "./modules/JobsSidebar";
 
+import DescriptionCard from "./modules/DescriptionCard";
 import StandardModuleCard from "./modules/StandardModuleCard";
 import ResultDisplayCard from "./modules/ResultModuleCard";
 import RefineModuleCard from "./modules/RefineModuleCard"
@@ -11,6 +12,7 @@ import ExportModuleCard from "./modules/ExportModuleCard";
 import RenderingModuleCard from "./modules/RenderingModuleCard";
 
 type ModuleConfig =
+  | { kind: "description"; title: string; description?: string; steps: TutorialStep[]; }
   | { kind: "standard"; title: string; module: string; description?: string }
   | { kind: "refine"; title: string; description?: string; sourceJobLabel?: string }
   | { kind: "export"; title: string; description?: string }
@@ -21,6 +23,22 @@ const SIDEBAR_W = "clamp(280px,30vw,420px)";
 
 export default function Home() {
   const modules: ModuleConfig[] = [
+    {
+      kind: "description",
+      title: "Tutorial Card",
+      description: "This card gives a short Overview of this web-app.",
+      steps: [
+        {
+          name: "Step 1",
+          description: "This is step 1."
+        },
+        {
+          name: "Step 2",
+          description: "This is step 2."
+        },
+      ],
+    },
+
     {
       kind: "standard",
       title: "Chain-of-Thought",
@@ -127,8 +145,18 @@ export default function Home() {
                  lg:min-h-screen lg:border-l lg:border-white/10
                  lg:[box-shadow:inset_3px_0_0_rgba(168,85,247,0.35)]"
       >
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-2">
           {modules.map((m) => {
+            if (m.kind === "description") {
+              return (
+                <DescriptionCard
+                  key={m.title}
+                  title={m.title}
+                  description={m.description}
+                  steps={m.steps}
+                />
+              );
+            }
             if (m.kind === "standard") {
               return (
                 <StandardModuleCard
