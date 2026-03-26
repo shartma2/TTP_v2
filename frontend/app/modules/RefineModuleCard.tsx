@@ -39,7 +39,6 @@ export default function RefineModuleCard({
     if (loading) return;
 
     if (!sourceJobId.trim()) {
-      //Set Error Message
       return
     }
 
@@ -53,7 +52,6 @@ export default function RefineModuleCard({
     });
 
     if (!jid) {
-      //Set Error Message
       return;
     }
 

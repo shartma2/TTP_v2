@@ -37,21 +37,8 @@ export type RenderJobResult = {
   svg: RenderSvgData;
 };
 
-/*
-export type JobUI = {
-    jobId: string;
-    status: string;
-    module?: string;
-    createdAt?: string;
-    updatedAt?: string;
+export type TutorialStep = {
+    name: string;
+    description: string;
 };
 
-
-export type JobResponse = {
-    jobId?: string;
-    status?: JobStatus;
-    module?: string;
-    result?: any;
-    error?: any;
-}
-*/
