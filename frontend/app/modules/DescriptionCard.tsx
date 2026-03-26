@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { useMemo, useState } from "react";
 import ModuleCardSpec from "./ModuleCardSpec";
 import { TutorialStep } from "../types";
 
@@ -12,7 +12,6 @@ type DescriptionCardProps = {
 };
 
 export default function DescriptionCard({ title, description, steps }: DescriptionCardProps) {
-    const inputRef = useRef<HTMLTextAreaElement | null>(null);
     const [stepIndex, setStepIndex] = useState(0);
 
     const safeSteps = useMemo(
