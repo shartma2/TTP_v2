@@ -1,17 +1,30 @@
-# Welcome to MkDocs
+# Text-to-PASS Generator (TTP_v2)
 
-For full documentation visit [mkdocs.org](https://www.mkdocs.org).
+This project is a bachelor thesis at the **University of Münster**, created by **Simon Hartmann (CC2026)**.
 
-## Commands
+The goal of TTP_v2 is to transform natural-language process descriptions into structured PASS artifacts and provide an end-to-end workflow for generation, validation, refinement, and export.
 
-* `mkdocs new [dir-name]` - Create a new project.
-* `mkdocs serve` - Start the live-reloading docs server.
-* `mkdocs build` - Build the documentation site.
-* `mkdocs -h` - Print help message and exit.
+## Container architecture
 
-## Project layout
+The system is designed as two Docker containers:
 
-    mkdocs.yml    # The configuration file.
-    docs/
-        index.md  # The documentation homepage.
-        ...       # Other markdown pages, images and other files.
+- **Backend container** (FastAPI): asynchronous job execution, module orchestration, validation/repair logic, and artifact logging.
+- **Frontend container** (Next.js): user interface for creating jobs, monitoring status, viewing results, refining models, and downloading exports.
+
+## Core capabilities
+
+- **Chain-of-Thought generation** for text-based reasoning outputs.
+- **Pipeline execution** with staged `generate -> validate -> repair` flow for PASS model processing.
+- **Human-in-the-loop refinement** based on previously generated jobs.
+- **Export module** for producing results in multiple formats (e.g., `.json`, `.txt`, `.owl`).
+- **Asynchronous job handling** with status tracking (`queued`, `running`, `done`, `failed`).
+
+## License
+
+This project is released under the **MIT License**.
+
+## Disclaimer
+
+Large parts of this documentation were created with AI agent support. While reviewed, it may still contain mistakes or outdated details.
+
+If you find an error, please open an issue or report it in the discussions panel.

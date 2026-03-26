@@ -1,22 +1,96 @@
-# Utilities
+# App Utilities Layer (`app/utils`)
 
-The `app/utils` package contains small cross-cutting helper modules that support the rest of the backend.
-These utilities do not implement domain logic themselves. Instead, they provide reusable functionality for error modeling, serialization, and logging.
+The utilities layer provides cross-cutting helpers used by services and modules. In this backend, utilities focus on three concerns:
 
-## Exceptions
+- structured logging
+- serialization to JSON-safe structures
+- domain-specific exception types
 
-The `exceptions.py` file defines the backend’s custom exception hierarchy. It introduces `JobError` as the common base class for controlled job-level failures and stores a human-readable `message` on the exception instance. On top of this base class, the file declares specialized exceptions such as `MissingParameterException`, `ModelValidationException`, `InvalidPASSModelException`, `InvalidExportFormatException`, and `JobNotFoundException`. This structure makes error cases explicit and provides a consistent way to distinguish expected business failures from unexpected runtime errors.
+These helpers keep module/service code focused on business logic.
 
-The utility is intentionally minimal. It does not contain handling logic itself, but instead provides standardized exception types that can be raised by other layers. This improves readability and keeps error semantics centralized in a single place.
+---
 
-## JSON Serialization Helper
+## Logging utilities (`app/utils/logging.py`)
 
-The `jsonable.py` file provides the function `to_jsonable(obj: Any) -> Any`, which converts arbitrary Python objects into JSON-serializable representations. It explicitly handles primitive values, datetime, Enum, Path, bytes, dictionaries, and collection types recursively. It also supports Pydantic models and falls back to methods such as `model_dump()`, `dict()`, or `to_json()` when available. As a final fallback, it returns `repr(obj)` so that unsupported values remain at least loggable.
+### `configure_logging(...)`
 
-This helper is mainly relevant because backend artifacts and structured logs may contain complex Python objects that cannot be written directly as JSON. The function therefore acts as a small normalization layer between internal runtime objects and serialized output.
+Initializes root logging with a JSON-style formatter and a default field filter.
 
-## Logging
+The `_DefaultFieldsFilter` ensures common metadata is present on each log record:
 
-The `logging.py` file centralizes logging-related functionality. It defines `configure_logging()`, `get_logger()`, and `save_artifact()`, as well as the internal `_DefaultFieldsFilter`. The filter ensures that each log record contains a job_id field and a generated timestamp, while `configure_logging()` installs a stream handler with a JSON-style log format containing `timestamp`, `level`, `job_id`, and `message`. This creates a consistent structured logging format for the backend.
+- `timestamp`
+- `job_id` (defaults to `"N/A"` if absent)
 
-In addition to runtime logging, the file also supports artifact persistence. The `save_artifact()` function writes structured JSON files into `/app/backend/logs`, creating the directory if necessary. Each artifact contains optional input data, and output data. Both input and output are passed through `to_jsonable()` beforehand so that complex objects can be written safely.
+Example output shape:
+
+```json
+{"timestamp":"...","level":"INFO","job_id":"...","message":"..."}
+```
+
+This makes logs machine-readable and easy to correlate per job.
+
+### `get_logger(name)`
+
+Returns namespaced loggers used across backend modules/services (e.g. `services.job_service`, `modules.pipeline.main`).
+
+### `save_artifact(output, input, job_id, prefix)`
+
+Persists execution artifacts as JSON files in `/app/backend/logs`.
+
+It stores:
+
+- job metadata (`job_id`, timestamp)
+- normalized input
+- normalized output
+
+This is especially useful for debugging pipeline stages and preserving intermediate outputs.
+
+---
+
+## Serialization utility (`app/utils/jsonable.py`)
+
+### `to_jsonable(obj)`
+
+Converts arbitrary Python objects into JSON-serializable data recursively.
+
+Handled types include:
+
+- primitives (`str`, `int`, `float`, `bool`, `None`)
+- `datetime` → ISO string
+- `Enum` → enum value
+- `Path` → string path
+- `bytes` → UTF-8 text with replacement fallback
+- `dict` / `list` / `tuple` / `set`
+- Pydantic models (`model_dump` / `dict`)
+
+As a final fallback, it returns `repr(obj)` to guarantee log/artifact safety.
+
+This function is the key reason artifact logging can accept diverse model outputs without failing JSON encoding.
+
+---
+
+## Exception taxonomy (`app/utils/exceptions.py`)
+
+The backend defines a small domain exception hierarchy:
+
+- `JobError` (base class for controlled job failures)
+- `MissingParameterException`
+- `ModelValidationException`
+- `InvalidPASSModelException`
+- `InvalidExportFormatException`
+- `JobNotFoundException`
+
+`JobService` treats `JobError` differently from unexpected exceptions:
+
+- `JobError` → controlled failure message in job record
+- other exceptions → generic failure with full exception logging
+
+This separation helps preserve user-facing error clarity while still capturing technical diagnostics.
+
+---
+
+## Why these utilities matter
+
+- They standardize observability across all backend modules
+- They reduce duplicated serialization/exception logic
+- They make asynchronous job execution easier to debug and operate

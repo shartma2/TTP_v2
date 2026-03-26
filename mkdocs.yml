@@ -31,11 +31,6 @@ nav:
           - Pipeline:
               - Overview: backend/modules/pipeline/overview.md
               - Stages: backend/modules/pipeline/stages.md
-              - Stage Details:
-                  - Generate: backend/modules/pipeline/stages/generate.md
-                  - Validate: backend/modules/pipeline/stages/validate.md
-                  - Repair: backend/modules/pipeline/stages/repair.md
-                  - Finalize: backend/modules/pipeline/stages/finalize.md
 
   - Frontend:
       - Overview: frontend/overview.md
