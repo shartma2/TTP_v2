@@ -77,7 +77,7 @@ export default function Home() {
     {
       kind: "export",
       title: "Export Module",
-      description: "Export a Job to a choosen file format."
+      description: "Export a Job to a chosen file format."
     },
   ];
 
