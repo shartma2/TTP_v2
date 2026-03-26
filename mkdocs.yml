@@ -31,14 +31,6 @@ nav:
           - Pipeline:
               - Overview: backend/modules/pipeline/overview.md
               - Stages: backend/modules/pipeline/stages.md
-              - Stage Details:
-                  - Generate: backend/modules/pipeline/stages/generate.md
-                  - Validate: backend/modules/pipeline/stages/validate.md
-                  - Repair: backend/modules/pipeline/stages/repair.md
-                  - Finalize: backend/modules/pipeline/stages/finalize.md
-
-  - Config:
-      - Overview: config/overview.md
 
   - Frontend:
       - Overview: frontend/overview.md
@@ -46,6 +38,9 @@ nav:
       - Modules: frontend/modules.md
       - Utilities:
           - Polling: frontend/util/polling.md
+
+  - Config:
+      - Overview: config/overview.md
 
 markdown_extensions:
   - admonition
