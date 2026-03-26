@@ -4,6 +4,10 @@ This project is a bachelor thesis at the **University of Münster**, created by 
 
 The goal of TTP_v2 is to transform natural-language process descriptions into structured PASS artifacts and provide an end-to-end workflow for generation, validation, refinement, and export.
 
+## 📚 Documentation
+
+👉 https://shartma2.github.io/TTP_v2/
+
 ## Container architecture
 
 The system is designed as two Docker containers:
